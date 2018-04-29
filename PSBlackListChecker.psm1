@@ -126,19 +126,22 @@ function Search-BlackList {
                 IP        = $ip
                 FQDN      = $fqdn
                 BlackList = $server
+
             }
             $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
             if ($DnsCheck -ne $null) {
                 $ServerData.IsListed = $true
                 $ServerData.Answer = $DnsCheck.IPAddress -join ", "
+                $ServerData.TTL = $DnsCheck.TTL
             } else {
                 $ServerData.IsListed = $false
                 $ServerData.Answer = $DnsCheck.IPAddress
+                $ServerData.TTL = ''
             }
             $blacklistedOn += $ServerData
         }
     }
-    $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, FQDN
+    $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
     if ($SortDescending -eq $true) {
         $table = $table | Sort-Object $SortBy -Descending
     } else {
