@@ -115,31 +115,50 @@ function Search-BlackList {
         $SortDescending = $false
     )
 
-    $blacklistedOn = @()
-    foreach ($server in $BlackLists) {
-        foreach ($ip in $ips) {
-            $reversedIP = ($IP -split '\.')[3..0] -join '.'
-            $fqdn = "$reversedIP.$server"
+    workflow Get-Blacklists {
+        param (
+            $BlacklistServers,
+            $Ips
+        )
+        $blacklistedOn = @()
+        foreach -parallel ($server in $BlacklistServers) {
+            #foreach ($server in $BlackLists) {
+            foreach ($ip in $ips) {
+                $reversedIP = ($IP -split '\.')[3..0] -join '.'
+                $fqdn = "$reversedIP.$server"
 
-            $ServerData = @{
-                IP        = $ip
-                FQDN      = $fqdn
-                BlackList = $server
+                $ServerData = @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
 
+                }
+                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
+                if ($DnsCheck -ne $null) {
+                    $ServerData = @{
+                        IP        = $ip
+                        FQDN      = $fqdn
+                        BlackList = $server
+                        IsListed  = $true
+                        Answer    = $DnsCheck.IPAddress -join ", "
+                        TTL       = $DnsCheck.TTL
+                    }
+                } else {
+                    $ServerData = @{
+                        IP        = $ip
+                        FQDN      = $fqdn
+                        BlackList = $server
+                        IsListed  = $false
+                        Answer    = $DnsCheck.IPAddress
+                        TTL       = ''
+                    }
+                }
+                $WORKFLOW:blacklistedOn += $ServerData
             }
-            $DnsCheck = Invoke-Command -ScriptBlock { Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' } -ArgumentList $fqdn
-            if ($DnsCheck -ne $null) {
-                $ServerData.IsListed = $true
-                $ServerData.Answer = $DnsCheck.IPAddress -join ", "
-                $ServerData.TTL = $DnsCheck.TTL
-            } else {
-                $ServerData.IsListed = $false
-                $ServerData.Answer = $DnsCheck.IPAddress
-                $ServerData.TTL = ''
-            }
-            $blacklistedOn += $ServerData
         }
     }
+    $blacklistedOn = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
+
     $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
     if ($SortDescending -eq $true) {
         $table = $table | Sort-Object $SortBy -Descending
@@ -239,9 +258,9 @@ function Set-EmailReportBrading($FormattingOptions) {
 function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGenerate) {
     $DateReport = get-date
     # HTML Report settings
-    $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`>"
+    $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`">"
     $Report += "<strong>Report Time:</strong> $DateReport <br>"
-    $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) miliseconds <br>"
+    $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) milliseconds <br>"
     $Report += "<strong>Account Executing Report :</strong> $env:userdomain\$($env:username.toupper()) on $($env:ComputerName.toUpper()) <br>"
     $Report += "<strong>Checking for monitored IPs :</strong>"
     $Report += "<ul>"
