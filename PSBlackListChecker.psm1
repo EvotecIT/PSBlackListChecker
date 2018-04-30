@@ -1,7 +1,7 @@
 #requires -Modules DNSClient
 #requites -Version 3.0
 
-$BlackLists = @(
+[string[]] $BlackLists = @(
     'b.barracudacentral.org'
     'spam.rbl.msrbl.net'
     'zen.spamhaus.org'
@@ -110,18 +110,19 @@ function Search-BlackList {
     #>
     param
     (
-        [string[]]$IPs,
-        $BlacklistServers = $BlackLists,
+        [string[]] $IPs,
+        [string[]] $BlacklistServers = $BlackLists,
         [switch] $ReturnAll,
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')]
-        $SortBy = 'IsListed',
-        $SortDescending = $false
+        [string] $SortBy = 'IsListed',
+        [switch] $SortDescending,
+        [switch] $QuickTimeout
     )
-
     workflow Get-Blacklists {
         param (
-            $BlacklistServers,
-            $Ips
+            [string[]] $BlacklistServers,
+            [string[]] $Ips,
+            [bool] $QuickTimeout
         )
         $blacklistedOn = @()
         foreach -parallel ($server in $BlacklistServers) {
@@ -129,8 +130,7 @@ function Search-BlackList {
             foreach ($ip in $ips) {
                 $reversedIP = ($IP -split '\.')[3..0] -join '.'
                 $fqdn = "$reversedIP.$server"
-
-                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile # Impact of using -QuickTimeout unknown
+                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
                 if ($DnsCheck -ne $null) {
                     $ServerData = @{
                         IP        = $ip
@@ -155,7 +155,7 @@ function Search-BlackList {
         }
         return $WORKFLOW:blacklistedOn
     }
-    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
+    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
 
     $table = $(foreach ($ht in $Output) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
     if ($SortDescending -eq $true) {
@@ -181,9 +181,9 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
     }
     $time = Measure-Command -Expression {
         if ($ReportOptions.EmailAllResults) {
-            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending -ReturnAll
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -ReturnAll
         } else {
-            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending
         }
     }
     $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
