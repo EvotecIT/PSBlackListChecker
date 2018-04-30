@@ -116,7 +116,6 @@ function Search-BlackList {
     )
 
     $blacklistedOn = @()
-
     foreach ($server in $BlackLists) {
         foreach ($ip in $ips) {
             $reversedIP = ($IP -split '\.')[3..0] -join '.'
@@ -128,7 +127,7 @@ function Search-BlackList {
                 BlackList = $server
 
             }
-            $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
+            $DnsCheck = Invoke-Command -ScriptBlock { Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' } -ArgumentList $fqdn
             if ($DnsCheck -ne $null) {
                 $ServerData.IsListed = $true
                 $ServerData.Answer = $DnsCheck.IPAddress -join ", "
@@ -158,19 +157,19 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
 
     $EmailBody = Set-EmailHead  -FormattingOptions $FormattingParameters
     $EmailBody += Set-EmailReportBrading -FormattingOptions $FormattingParameters
-    $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions
 
     $Ips = @()
     foreach ($ip in $ReportOptions.MonitoredIps.Values) {
         $Ips += $ip
     }
-
-    if ($ReportOptions.EmailAllResults) {
-        $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending -ReturnAll
-    } else {
-        $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending
+    $time = Measure-Command -Expression {
+        if ($ReportOptions.EmailAllResults) {
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending -ReturnAll
+        } else {
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending $ReportOptions.SortDescending
+        }
     }
-
+    $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
     $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage "Following blacklisted servers"
 
     if ($BlackListCheck.IsListed -contains $true) {
@@ -237,11 +236,12 @@ function Set-EmailReportBrading($FormattingOptions) {
     }
     return $Report
 }
-function Set-EmailReportDetails($FormattingOptions, $ReportOptions) {
+function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGenerate) {
     $DateReport = get-date
     # HTML Report settings
-    $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`">"
+    $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`>"
     $Report += "<strong>Report Time:</strong> $DateReport <br>"
+    $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) miliseconds <br>"
     $Report += "<strong>Account Executing Report :</strong> $env:userdomain\$($env:username.toupper()) on $($env:ComputerName.toUpper()) <br>"
     $Report += "<strong>Checking for monitored IPs :</strong>"
     $Report += "<ul>"
