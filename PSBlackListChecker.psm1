@@ -117,56 +117,56 @@ function Search-BlackList {
         $SortBy = 'IsListed',
         $SortDescending = $false
     )
-    process {
-        workflow Get-Blacklists {
-            param (
-                $BlacklistServers,
-                $Ips
-            )
-            $blacklistedOn = @()
-            foreach -parallel ($server in $BlacklistServers) {
-                #foreach ($server in $BlackLists) {
-                foreach ($ip in $ips) {
-                    $reversedIP = ($IP -split '\.')[3..0] -join '.'
-                    $fqdn = "$reversedIP.$server"
 
-                    $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
-                    if ($DnsCheck -ne $null) {
-                        $ServerData = @{
-                            IP        = $ip
-                            FQDN      = $fqdn
-                            BlackList = $server
-                            IsListed  = $true
-                            Answer    = $DnsCheck.IPAddress -join ', '
-                            TTL       = $DnsCheck.TTL
-                        }
-                    } else {
-                        $ServerData = @{
-                            IP        = $ip
-                            FQDN      = $fqdn
-                            BlackList = $server
-                            IsListed  = $false
-                            Answer    = $DnsCheck.IPAddress
-                            TTL       = ''
-                        }
+    workflow Get-Blacklists {
+        param (
+            $BlacklistServers,
+            $Ips
+        )
+        $blacklistedOn = @()
+        foreach -parallel ($server in $BlacklistServers) {
+            #foreach ($server in $BlackLists) {
+            foreach ($ip in $ips) {
+                $reversedIP = ($IP -split '\.')[3..0] -join '.'
+                $fqdn = "$reversedIP.$server"
+
+                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile # Impact of using -QuickTimeout unknown
+                if ($DnsCheck -ne $null) {
+                    $ServerData = @{
+                        IP        = $ip
+                        FQDN      = $fqdn
+                        BlackList = $server
+                        IsListed  = $true
+                        Answer    = $DnsCheck.IPAddress -join ', '
+                        TTL       = $DnsCheck.TTL
                     }
-                    $WORKFLOW:blacklistedOn += $ServerData
+                } else {
+                    $ServerData = @{
+                        IP        = $ip
+                        FQDN      = $fqdn
+                        BlackList = $server
+                        IsListed  = $false
+                        Answer    = $DnsCheck.IPAddress
+                        TTL       = ''
+                    }
                 }
+                $WORKFLOW:blacklistedOn += $ServerData
             }
         }
-        $blacklistedOn = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
+        return $WORKFLOW:blacklistedOn
+    }
+    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
 
-        $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
-        if ($SortDescending -eq $true) {
-            $table = $table | Sort-Object $SortBy -Descending
-        } else {
-            $table = $table | Sort-Object $SortBy
-        }
-        if ($ReturnAll -eq $true) {
-            return $table
-        } else {
-            return $table | Where-Object { $_.IsListed -eq $true }
-        }
+    $table = $(foreach ($ht in $Output) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
+    if ($SortDescending -eq $true) {
+        $table = $table | Sort-Object $SortBy -Descending
+    } else {
+        $table = $table | Sort-Object $SortBy
+    }
+    if ($ReturnAll -eq $true) {
+        return $table
+    } else {
+        return $table | Where-Object { $_.IsListed -eq $true }
     }
 }
 
