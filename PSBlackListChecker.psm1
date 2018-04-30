@@ -1,3 +1,6 @@
+#requires -Modules DNSClient
+#requites -Version 3.0
+
 $BlackLists = @(
     'b.barracudacentral.org'
     'spam.rbl.msrbl.net'
@@ -83,26 +86,26 @@ $BlackLists = @(
 
 function Search-BlackList {
     <#
-    .SYNOPSIS
-    Search-Blacklist searches if particular IP is blacklisted on DNSBL Blacklists.
-    .DESCRIPTION
+      .SYNOPSIS
+      Search-Blacklist searches if particular IP is blacklisted on DNSBL Blacklists.
+      .DESCRIPTION
 
-    .PARAMETER IPs
+      .PARAMETER IPs
 
-    .PARAMETER BlacklistServers
+      .PARAMETER BlacklistServers
 
-    .PARAMETER ReturnAll
+      .PARAMETER ReturnAll
 
-    .PARAMETER SortBy
+      .PARAMETER SortBy
 
-    .PARAMETER SortDescending
+      .PARAMETER SortDescending
 
-    .EXAMPLE
-    Search-BlackList -IP '89.25.253.1' | Format-Table
-    Search-BlackList -IP '89.25.253.1' -SortBy Blacklist | Format-Table
-    Search-BlackList -IP '89.25.253.1','195.55.55.55' -SortBy Ip -ReturnAll | Format-Table
+      .EXAMPLE
+      Search-BlackList -IP '89.25.253.1' | Format-Table
+      Search-BlackList -IP '89.25.253.1' -SortBy Blacklist | Format-Table
+      Search-BlackList -IP '89.25.253.1','195.55.55.55' -SortBy Ip -ReturnAll | Format-Table
 
-    .NOTES
+      .NOTES
 
     #>
     param
@@ -114,61 +117,56 @@ function Search-BlackList {
         $SortBy = 'IsListed',
         $SortDescending = $false
     )
+    process {
+        workflow Get-Blacklists {
+            param (
+                $BlacklistServers,
+                $Ips
+            )
+            $blacklistedOn = @()
+            foreach -parallel ($server in $BlacklistServers) {
+                #foreach ($server in $BlackLists) {
+                foreach ($ip in $ips) {
+                    $reversedIP = ($IP -split '\.')[3..0] -join '.'
+                    $fqdn = "$reversedIP.$server"
 
-    workflow Get-Blacklists {
-        param (
-            $BlacklistServers,
-            $Ips
-        )
-        $blacklistedOn = @()
-        foreach -parallel ($server in $BlacklistServers) {
-            #foreach ($server in $BlackLists) {
-            foreach ($ip in $ips) {
-                $reversedIP = ($IP -split '\.')[3..0] -join '.'
-                $fqdn = "$reversedIP.$server"
-
-                $ServerData = @{
-                    IP        = $ip
-                    FQDN      = $fqdn
-                    BlackList = $server
-
-                }
-                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
-                if ($DnsCheck -ne $null) {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $true
-                        Answer    = $DnsCheck.IPAddress -join ", "
-                        TTL       = $DnsCheck.TTL
+                    $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue'
+                    if ($DnsCheck -ne $null) {
+                        $ServerData = @{
+                            IP        = $ip
+                            FQDN      = $fqdn
+                            BlackList = $server
+                            IsListed  = $true
+                            Answer    = $DnsCheck.IPAddress -join ', '
+                            TTL       = $DnsCheck.TTL
+                        }
+                    } else {
+                        $ServerData = @{
+                            IP        = $ip
+                            FQDN      = $fqdn
+                            BlackList = $server
+                            IsListed  = $false
+                            Answer    = $DnsCheck.IPAddress
+                            TTL       = ''
+                        }
                     }
-                } else {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $false
-                        Answer    = $DnsCheck.IPAddress
-                        TTL       = ''
-                    }
+                    $WORKFLOW:blacklistedOn += $ServerData
                 }
-                $WORKFLOW:blacklistedOn += $ServerData
             }
         }
-    }
-    $blacklistedOn = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
+        $blacklistedOn = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs
 
-    $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
-    if ($SortDescending -eq $true) {
-        $table = $table | Sort-Object $SortBy -Descending
-    } else {
-        $table = $table | Sort-Object $SortBy
-    }
-    if ($ReturnAll -eq $true) {
-        return $table
-    } else {
-        return $table | Where-Object { $_.IsListed -eq $true }
+        $table = $(foreach ($ht in $blacklistedOn) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
+        if ($SortDescending -eq $true) {
+            $table = $table | Sort-Object $SortBy -Descending
+        } else {
+            $table = $table | Sort-Object $SortBy
+        }
+        if ($ReturnAll -eq $true) {
+            return $table
+        } else {
+            return $table | Where-Object { $_.IsListed -eq $true }
+        }
     }
 }
 
@@ -189,7 +187,7 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
         }
     }
     $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
-    $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage "Following blacklisted servers"
+    $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage 'Following blacklisted servers'
 
     if ($BlackListCheck.IsListed -contains $true) {
         $EmailParameters.EmailPriority = $ReportOptions.EmailPriorityWhenBlacklisted
@@ -207,51 +205,51 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
 }
 
 function Set-EmailHead($FormattingOptions) {
-    $Head = "<style>" +
+    $Head = '<style>' +
     "BODY{background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)}" +
-    "TABLE{border-width: 1px;border-style: solid;border-color: black;border-collapse: collapse}" +
+    'TABLE{border-width: 1px;border-style: solid;border-color: black;border-collapse: collapse}' +
     "TH{border-width: 1px;padding: 3px;border-style: solid;border-color: black;background-color:`"#00297A`";font-color:white}" +
-    "TD{border-width: 1px;padding-right: 2px;padding-left: 2px;padding-top: 0px;padding-bottom: 0px;border-style: solid;border-color: black;background-color:white}" +
+    'TD{border-width: 1px;padding-right: 2px;padding-left: 2px;padding-top: 0px;padding-bottom: 0px;border-style: solid;border-color: black;background-color:white}' +
     "H2{font-family:$($FormattingOptions.FontHeadingFamily);font-size:$($FormattingOptions.FontHeadingSize)}" +
     "P{font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)}" +
     "LI{font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)}" +
-    "</style>"
+    '</style>'
     return $Head
 }
 function Set-EmailBody($TableData, $TableWelcomeMessage) {
     $body = "<p><i>$TableWelcomeMessage</i>"
     if ($($TableData | Measure-Object).Count -gt 0) {
         $body += $TableData | ConvertTo-Html -Fragment | Out-String
-        $body = $body -replace " Added", "<font color=`"green`"><b> Added</b></font>"
-        $body = $body -replace " Removed", "<font color=`"red`"><b> Removed</b></font>"
-        $body = $body -replace " Deleted", "<font color=`"red`"><b> Deleted</b></font>"
-        $body = $body -replace " Changed", "<font color=`"blue`"><b> Changed</b></font>"
-        $body = $body -replace " Change", "<font color=`"blue`"><b> Change</b></font>"
-        $body = $body -replace " Disabled", "<font color=`"red`"><b> Disabled</b></font>"
-        $body = $body -replace " Enabled", "<font color=`"green`"><b> Enabled</b></font>"
-        $body = $body -replace " Locked out", "<font color=`"red`"><b> Locked out</b></font>"
-        $body = $body -replace " Lockouts", "<font color=`"red`"><b> Lockouts</b></font>"
-        $body = $body -replace " Unlocked", "<font color=`"green`"><b> Unlocked</b></font>"
-        $body = $body -replace " Reset", "<font color=`"blue`"><b> Reset</b></font>"
-        $body += "</p>"
+        $body = $body -replace ' Added', "<font color=`"green`"><b> Added</b></font>"
+        $body = $body -replace ' Removed', "<font color=`"red`"><b> Removed</b></font>"
+        $body = $body -replace ' Deleted', "<font color=`"red`"><b> Deleted</b></font>"
+        $body = $body -replace ' Changed', "<font color=`"blue`"><b> Changed</b></font>"
+        $body = $body -replace ' Change', "<font color=`"blue`"><b> Change</b></font>"
+        $body = $body -replace ' Disabled', "<font color=`"red`"><b> Disabled</b></font>"
+        $body = $body -replace ' Enabled', "<font color=`"green`"><b> Enabled</b></font>"
+        $body = $body -replace ' Locked out', "<font color=`"red`"><b> Locked out</b></font>"
+        $body = $body -replace ' Lockouts', "<font color=`"red`"><b> Lockouts</b></font>"
+        $body = $body -replace ' Unlocked', "<font color=`"green`"><b> Unlocked</b></font>"
+        $body = $body -replace ' Reset', "<font color=`"blue`"><b> Reset</b></font>"
+        $body += '</p>'
     } else {
-        $body += "<br><i>No changes happend during that period.</i></p>"
+        $body += '<br><i>No changes happend during that period.</i></p>'
     }
     return $body
 }
 function Set-EmailReportBrading($FormattingOptions) {
     $Report = "<a style=`"text-decoration:none`" href=`"$($FormattingOptions.CompanyBranding.Link)`" class=`"clink logo-container`">" +
     "<img width=<fix> height=<fix> src=`"$($FormattingOptions.CompanyBranding.Logo)`" border=`"0`" class=`"company-logo`" alt=`"company-logo`">" +
-    "</a>"
-    if ($FormattingOptions.CompanyBranding.Width -ne "") {
-        $report = $report -replace "width=<fix>", "width=$($FormattingOptions.CompanyBranding.Width)"
+    '</a>'
+    if ($FormattingOptions.CompanyBranding.Width -ne '') {
+        $report = $report -replace 'width=<fix>', "width=$($FormattingOptions.CompanyBranding.Width)"
     } else {
-        $report = $report -replace "width=<fix>", ""
+        $report = $report -replace 'width=<fix>', ''
     }
-    if ($FormattingOptions.CompanyBranding.Height -ne "") {
-        $report = $report -replace "height=<fix>", "height=$($FormattingOptions.CompanyBranding.Height)"
+    if ($FormattingOptions.CompanyBranding.Height -ne '') {
+        $report = $report -replace 'height=<fix>', "height=$($FormattingOptions.CompanyBranding.Height)"
     } else {
-        $report = $report -replace "height=<fix>", ""
+        $report = $report -replace 'height=<fix>', ''
     }
     return $Report
 }
@@ -262,17 +260,17 @@ function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGener
     $Report += "<strong>Report Time:</strong> $DateReport <br>"
     $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) milliseconds <br>"
     $Report += "<strong>Account Executing Report :</strong> $env:userdomain\$($env:username.toupper()) on $($env:ComputerName.toUpper()) <br>"
-    $Report += "<strong>Checking for monitored IPs :</strong>"
-    $Report += "<ul>"
+    $Report += '<strong>Checking for monitored IPs :</strong>'
+    $Report += '<ul>'
     foreach ($ip in $ReportOptions.MonitoredIps.Values) {
         $Report += "<li>ip:</strong> $ip</li>"
     }
-    $Report += "</ul>"
-    $Report += "</p>"
+    $Report += '</ul>'
+    $Report += '</p>'
     return $Report
 }
 
-function Send-Email ([hashtable] $EmailParameters, [string] $Body = "", $Attachment = $null, [string] $Subject = "", $To = "") {
+function Send-Email ([hashtable] $EmailParameters, [string] $Body = '', $Attachment = $null, [string] $Subject = '', $To = '') {
     #     $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody -Attachment $Reports -Subject $TemporarySubject
     #  Preparing the Email properties
     $SmtpClient = New-Object -TypeName system.net.mail.smtpClient
@@ -280,37 +278,37 @@ function Send-Email ([hashtable] $EmailParameters, [string] $Body = "", $Attachm
 
     # Adding parameters to login to server
     $SmtpClient.Port = $EmailParameters.EmailServerPort
-    if ($EmailParameters.EmailServerLogin -ne "") {
+    if ($EmailParameters.EmailServerLogin -ne '') {
         $SmtpClient.Credentials = New-Object System.Net.NetworkCredential($EmailParameters.EmailServerLogin, $EmailParameters.EmailServerPassword)
     }
     $SmtpClient.EnableSsl = $EmailParameters.EmailServerEnableSSL
     $MailMessage = New-Object -TypeName system.net.mail.mailmessage
     $MailMessage.From = $EmailParameters.EmailFrom
-    if ($To -ne "") {
+    if ($To -ne '') {
         foreach ($T in $To) { $MailMessage.To.add($($T)) }
     } else {
-        if ($EmailParameters.Emailto -ne "") {
+        if ($EmailParameters.Emailto -ne '') {
             foreach ($To in $EmailParameters.Emailto) { $MailMessage.To.add($($To)) }
         }
     }
-    if ($EmailParameters.EmailCC -ne "") {
+    if ($EmailParameters.EmailCC -ne '') {
         foreach ($CC in $EmailParameters.EmailCC) { $MailMessage.CC.add($($CC)) }
     }
-    if ($EmailParameters.EmailBCC -ne "") {
+    if ($EmailParameters.EmailBCC -ne '') {
         foreach ($BCC in $EmailParameters.EmailBCC) { $MailMessage.BCC.add($($BCC)) }
     }
     $MailMessage.IsBodyHtml = 1
-    if ($Subject -eq "") {
+    if ($Subject -eq '') {
         $MailMessage.Subject = $EmailParameters.EmailSubject
     } else {
         $MailMessage.Subject = $Subject
     }
     $MailMessage.Body = $Body
-    $MailMessage.Priority = [System.Net.Mail.MailPriority]::$($EmailParameters.EmailPriority)
+    $MailMessage.Priority = [Net.Mail.MailPriority]::$($EmailParameters.EmailPriority)
 
     #  Encoding
-    $MailMessage.BodyEncoding = [System.Text.Encoding]::$($EmailParameters.EmailEncoding)
-    $MailMessage.SubjectEncoding = [System.Text.Encoding]::$($EmailParameters.EmailEncoding)
+    $MailMessage.BodyEncoding = [Text.Encoding]::$($EmailParameters.EmailEncoding)
+    $MailMessage.SubjectEncoding = [Text.Encoding]::$($EmailParameters.EmailEncoding)
 
     #  Attaching file (s)
     if ($Attachment -ne $null) {
@@ -329,7 +327,7 @@ function Send-Email ([hashtable] $EmailParameters, [string] $Body = "", $Attachm
         $MailMessage.Dispose();
         return @{
             Status = $True
-            Error  = ""
+            Error  = ''
         }
     } catch {
         $MailMessage.Dispose();
