@@ -258,7 +258,7 @@ function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGener
     # HTML Report settings
     $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`">"
     $Report += "<strong>Report Time:</strong> $DateReport <br>"
-    $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) milliseconds <br>"
+    $Report += "<strong>Time to generate:</strong> $($TimeToGenerate.Hours) hours, $($TimeToGenerate.Minutes) minutes, $($TimeToGenerate.Seconds) seconds, $($TimeToGenerate.Milliseconds) milliseconds <br>"
     $Report += "<strong>Account Executing Report :</strong> $env:userdomain\$($env:username.toupper()) on $($env:ComputerName.toUpper()) <br>"
     $Report += '<strong>Checking for monitored IPs :</strong>'
     $Report += '<ul>'
@@ -270,45 +270,50 @@ function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGener
     return $Report
 }
 
-function Send-Email ([hashtable] $EmailParameters, [string] $Body = '', $Attachment = $null, [string] $Subject = '', $To = '') {
-    #     $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody -Attachment $Reports -Subject $TemporarySubject
+function Send-Email ([hashtable] $EmailParameters, [string] $Body = "", $Attachment = $null, [string] $Subject = "", $To = "") {
     #  Preparing the Email properties
     $SmtpClient = New-Object -TypeName system.net.mail.smtpClient
     $SmtpClient.host = $EmailParameters.EmailServer
 
     # Adding parameters to login to server
     $SmtpClient.Port = $EmailParameters.EmailServerPort
-    if ($EmailParameters.EmailServerLogin -ne '') {
+    if ($EmailParameters.EmailServerLogin -ne "") {
         $SmtpClient.Credentials = New-Object System.Net.NetworkCredential($EmailParameters.EmailServerLogin, $EmailParameters.EmailServerPassword)
     }
     $SmtpClient.EnableSsl = $EmailParameters.EmailServerEnableSSL
     $MailMessage = New-Object -TypeName system.net.mail.mailmessage
     $MailMessage.From = $EmailParameters.EmailFrom
-    if ($To -ne '') {
+    if ($To -ne "") {
         foreach ($T in $To) { $MailMessage.To.add($($T)) }
     } else {
-        if ($EmailParameters.Emailto -ne '') {
+        if ($EmailParameters.Emailto -ne "") {
             foreach ($To in $EmailParameters.Emailto) { $MailMessage.To.add($($To)) }
         }
     }
-    if ($EmailParameters.EmailCC -ne '') {
+    if ($EmailParameters.EmailCC -ne "") {
         foreach ($CC in $EmailParameters.EmailCC) { $MailMessage.CC.add($($CC)) }
     }
-    if ($EmailParameters.EmailBCC -ne '') {
+    if ($EmailParameters.EmailBCC -ne "") {
         foreach ($BCC in $EmailParameters.EmailBCC) { $MailMessage.BCC.add($($BCC)) }
     }
+    $Exists = Test-Key $EmailParameters "EmailParameters" "EmailReplyTo" -DisplayProgress $false
+    if ($Exists -eq $true) {
+        if ($EmailParameters.EmailReplyTo -ne "") {
+            $MailMessage.ReplyTo = $EmailParameters.EmailReplyTo
+        }
+    }
     $MailMessage.IsBodyHtml = 1
-    if ($Subject -eq '') {
+    if ($Subject -eq "") {
         $MailMessage.Subject = $EmailParameters.EmailSubject
     } else {
         $MailMessage.Subject = $Subject
     }
     $MailMessage.Body = $Body
-    $MailMessage.Priority = [Net.Mail.MailPriority]::$($EmailParameters.EmailPriority)
+    $MailMessage.Priority = [System.Net.Mail.MailPriority]::$($EmailParameters.EmailPriority)
 
     #  Encoding
-    $MailMessage.BodyEncoding = [Text.Encoding]::$($EmailParameters.EmailEncoding)
-    $MailMessage.SubjectEncoding = [Text.Encoding]::$($EmailParameters.EmailEncoding)
+    $MailMessage.BodyEncoding = [System.Text.Encoding]::$($EmailParameters.EmailEncoding)
+    $MailMessage.SubjectEncoding = [System.Text.Encoding]::$($EmailParameters.EmailEncoding)
 
     #  Attaching file (s)
     if ($Attachment -ne $null) {
@@ -319,15 +324,13 @@ function Send-Email ([hashtable] $EmailParameters, [string] $Body = '', $Attachm
             }
         }
     }
-
     #  Sending the Email
     try {
         $SmtpClient.Send($MailMessage)
-        #$att.Dispose();
         $MailMessage.Dispose();
         return @{
             Status = $True
-            Error  = ''
+            Error  = ""
         }
     } catch {
         $MailMessage.Dispose();
@@ -338,6 +341,24 @@ function Send-Email ([hashtable] $EmailParameters, [string] $Body = '', $Attachm
     }
 
 }
-
+function Test-Key ($ConfigurationTable, $ConfigurationSection = "", $ConfigurationKey, $DisplayProgress = $false) {
+    if ($ConfigurationTable -eq $null) { return $false }
+    try {
+        $value = $ConfigurationTable.ContainsKey($ConfigurationKey)
+    } catch {
+        $value = $false
+    }
+    if ($value -eq $true) {
+        if ($DisplayProgress -eq $true) {
+            Write-Color @script:WriteParameters -Text "[i] ", "Parameter in configuration of ", "$ConfigurationSection.$ConfigurationKey", " exists." -Color White, White, Green, White
+        }
+        return $true
+    } else {
+        if ($DisplayProgress -eq $true) {
+            Write-Color @script:WriteParameters -Text "[i] ", "Parameter in configuration of ", "$ConfigurationSection.$ConfigurationKey", " doesn't exist." -Color White, White, Red, White
+        }
+        return $false
+    }
+}
 
 Export-ModuleMember -function 'Search-BlackList', 'Start-ReportBlackLists'
