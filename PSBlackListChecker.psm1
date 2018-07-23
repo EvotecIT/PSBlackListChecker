@@ -171,7 +171,6 @@ function Search-BlackList {
 }
 
 function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $ReportOptions) {
-
     $EmailBody = Set-EmailHead  -FormattingOptions $FormattingParameters
     $EmailBody += Set-EmailReportBrading -FormattingOptions $FormattingParameters
 
