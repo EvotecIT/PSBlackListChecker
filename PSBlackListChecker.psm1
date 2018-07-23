@@ -169,7 +169,6 @@ function Search-BlackList {
         return $table | Where-Object { $_.IsListed -eq $true }
     }
 }
-
 function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $ReportOptions) {
     $EmailBody = Set-EmailHead  -FormattingOptions $FormattingParameters
     $EmailBody += Set-EmailReportBrading -FormattingOptions $FormattingParameters
@@ -202,7 +201,6 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
         }
     }
 }
-
 function Set-EmailHead($FormattingOptions) {
     $Head = '<style>' +
     "BODY{background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)}" +
@@ -268,7 +266,6 @@ function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGener
     $Report += '</p>'
     return $Report
 }
-
 function Send-Email ([hashtable] $EmailParameters, [string] $Body = "", $Attachment = $null, [string] $Subject = "", $To = "") {
     #  Preparing the Email properties
     $SmtpClient = New-Object -TypeName system.net.mail.smtpClient
