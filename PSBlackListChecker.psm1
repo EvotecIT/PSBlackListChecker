@@ -333,7 +333,7 @@ function Stop-Runspace {
     return $List
 }
 
-$ScriptBlock = {
+$ScriptBlockResolveDNS = {
     param (
         [string] $Server,
         [string] $IP,
@@ -367,8 +367,7 @@ $ScriptBlock = {
     }
     return $ServerData
 }
-
-$ScriptBlock2 = {
+$ScriptBlockNetDNS = {
     param (
         [string] $Server,
         [string] $IP,
@@ -405,8 +404,168 @@ $ScriptBlock2 = {
 
     return $ServerData
 }
+$ScriptBlockNetDNSSlow = {
+    param (
+        [string[]] $Servers,
+        [string] $IP,
+        [bool] $QuickTimeout,
+        [bool] $Verbose
+    )
+    if ($Verbose) {
+        $verbosepreference = 'continue'
+    }
+    $BlacklistedOn = @()
+    foreach ($Server in $Servers) {
+
+        $reversedIP = ($IP -split '\.')[3..0] -join '.'
+        $fqdn = "$reversedIP.$server"
+        try {
+            $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
+
+        } catch { $DnsCheck = $null }
+        if ($DnsCheck -ne $null) {
+            $ServerData = @{
+                IP        = $ip
+                FQDN      = $fqdn
+                BlackList = $server
+                IsListed  = $true
+                Answer    = $DnsCheck.IPAddressToString -join ', '
+                TTL       = ''
+            }
+        } else {
+            $ServerData = @{
+                IP        = $ip
+                FQDN      = $fqdn
+                BlackList = $server
+                IsListed  = $false
+                Answer    = $DnsCheck.IPAddress
+                TTL       = ''
+            }
+        }
+        $BlackListedOn += $ServerData
+
+    }
+    return $BlacklistedOn
+}
+$ScriptBlockResolveDNSSlow = {
+    param (
+        [string[]] $Servers,
+        [string] $IP,
+        [bool] $QuickTimeout,
+        [bool] $Verbose
+    )
+    if ($Verbose) {
+        $verbosepreference = 'continue'
+    }
+    $BlacklistedOn = @()
+    foreach ($Server in $Servers) {
+
+        $reversedIP = ($IP -split '\.')[3..0] -join '.'
+        $fqdn = "$reversedIP.$server"
+        $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
+        if ($DnsCheck -ne $null) {
+            $ServerData = @{
+                IP        = $ip
+                FQDN      = $fqdn
+                BlackList = $server
+                IsListed  = $true
+                Answer    = $DnsCheck.IPAddress -join ', '
+                TTL       = $DnsCheck.TTL
+            }
+        } else {
+            $ServerData = @{
+                IP        = $ip
+                FQDN      = $fqdn
+                BlackList = $server
+                IsListed  = $false
+                Answer    = $DnsCheck.IPAddress
+                TTL       = ''
+            }
+        }
+        $BlackListedOn += $ServerData
+
+    }
+    return $BlacklistedOn
+}
+workflow Get-BlacklistsResolveDNS {
+    param (
+        [string[]] $BlacklistServers,
+        [string[]] $Ips,
+        [bool] $QuickTimeout
+    )
+    $blacklistedOn = @()
+    foreach -parallel ($server in $BlacklistServers) {
+        #foreach ($server in $BlackLists) {
+        foreach ($ip in $ips) {
+            $reversedIP = ($IP -split '\.')[3..0] -join '.'
+            $fqdn = "$reversedIP.$server"
+            $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
+            if ($DnsCheck -ne $null) {
+                $ServerData = @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
+                    IsListed  = $true
+                    Answer    = $DnsCheck.IPAddress -join ', '
+                    TTL       = $DnsCheck.TTL
+                }
+            } else {
+                $ServerData = @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
+                    IsListed  = $false
+                    Answer    = $DnsCheck.IPAddress
+                    TTL       = ''
+                }
+            }
+            $WORKFLOW:blacklistedOn += $ServerData
+        }
+    }
+    return $WORKFLOW:blacklistedOn
+}
+workflow Get-BlacklistsNetDNS {
+    param (
+        [string[]] $BlacklistServers,
+        [string[]] $Ips,
+        [bool] $QuickTimeout
+    )
+    $blacklistedOn = @()
+    foreach -parallel ($server in $BlacklistServers) {
+        #foreach ($server in $BlackLists) {
+        foreach ($ip in $ips) {
+            $reversedIP = ($IP -split '\.')[3..0] -join '.'
+            $fqdn = "$reversedIP.$server"
+            try {
+                $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
+            } catch { $DnsCheck = $null }
+            if ($DnsCheck -ne $null) {
+                $ServerData = @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
+                    IsListed  = $true
+                    Answer    = $DnsCheck.IPAddress -join ', '
+                    TTL       = $DnsCheck.TTL
+                }
+            } else {
+                $ServerData = @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
+                    IsListed  = $false
+                    Answer    = $DnsCheck.IPAddress
+                    TTL       = ''
+                }
+            }
+            $WORKFLOW:blacklistedOn += $ServerData
+        }
+    }
+    return $WORKFLOW:blacklistedOn
+}
 
 function Search-BlackList {
+    [cmdletbinding()]
     <#
       .SYNOPSIS
       Search-Blacklist searches if particular IP is blacklisted on DNSBL Blacklists.
@@ -435,49 +594,67 @@ function Search-BlackList {
         [string[]] $IPs,
         [string[]] $BlacklistServers = $BlackLists,
         [switch] $ReturnAll,
-        [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')]
-        [string] $SortBy = 'IsListed',
+        [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
+        [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
         [switch] $SortDescending,
-        [switch] $QuickTimeout
+        [switch] $QuickTimeout,
+        [int] $MaxRunspaces = [int]$env:NUMBER_OF_PROCESSORS + 1
     )
-    workflow Get-Blacklists {
-        param (
-            [string[]] $BlacklistServers,
-            [string[]] $Ips,
-            [bool] $QuickTimeout
-        )
-        $blacklistedOn = @()
-        foreach -parallel ($server in $BlacklistServers) {
-            #foreach ($server in $BlackLists) {
+    if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { $Verbose = $true } else { $Verbose = $false }
+
+    If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
+        $Output = Invoke-Command -ScriptBlock $ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+    } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
+        $Output = Invoke-Command -ScriptBlock $ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+    } elseif ($RunType -eq 'WorkflowResolveDNS') {
+        $Output = Get-BlacklistsResolveDNS -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
+    } elseif ($RunType -eq 'WorkflowWithNetDNS') {
+        $Output = Get-BlacklistsNetDNS -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
+    } elseif ($RunType -eq 'RunSpaceWithResolveDNS') {
+        ### Define Runspace START
+        $runspaces = @()
+        $pool = New-Runspace -MaxRunspaces $maxRunspaces -Verbose:$Verbose
+        ### Define Runspace END
+
+        foreach ($server in $BlacklistServers) {
             foreach ($ip in $ips) {
-                $reversedIP = ($IP -split '\.')[3..0] -join '.'
-                $fqdn = "$reversedIP.$server"
-                $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
-                if ($DnsCheck -ne $null) {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $true
-                        Answer    = $DnsCheck.IPAddress -join ', '
-                        TTL       = $DnsCheck.TTL
-                    }
-                } else {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $false
-                        Answer    = $DnsCheck.IPAddress
-                        TTL       = ''
-                    }
+                $Parameters = [ordered] @{
+                    Server       = $Server
+                    IP           = $IP
+                    QuickTimeout = $QuickTimeout
+                    Verbose      = $Verbose
                 }
-                $WORKFLOW:blacklistedOn += $ServerData
+                $runspaces += Start-Runspace -ScriptBlock $ScriptBlockResolveDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
             }
         }
-        return $WORKFLOW:blacklistedOn
+        ### End Runspaces START
+        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose
+        ### End Runspaces END
+
+    } elseif ($RunType -eq 'RunSpaceWithNetDNS') {
+        ### Define Runspace START
+        $runspaces = @()
+        $pool = New-Runspace -MaxRunspaces $maxRunspaces -Verbose:$Verbose
+        ### Define Runspace END
+
+
+        foreach ($server in $BlacklistServers) {
+            foreach ($ip in $ips) {
+                $Parameters = [ordered] @{
+                    Server       = $Server
+                    IP           = $IP
+                    QuickTimeout = $QuickTimeout
+                    Verbose      = $Verbose
+                }
+                $runspaces += Start-Runspace -ScriptBlock $ScriptBlockNetDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
+            }
+        }
+        #    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
+
+        ### End Runspaces START
+        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose
+        ### End Runspaces END
     }
-    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
 
     $table = $(foreach ($ht in $Output) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
     if ($SortDescending -eq $true) {
@@ -675,45 +852,7 @@ function Search-BlackList3 {
         [switch] $SortDescending,
         [switch] $QuickTimeout
     )
-    workflow Get-Blacklists {
-        param (
-            [string[]] $BlacklistServers,
-            [string[]] $Ips,
-            [bool] $QuickTimeout
-        )
-        $blacklistedOn = @()
-        foreach -parallel ($server in $BlacklistServers) {
-            #foreach ($server in $BlackLists) {
-            foreach ($ip in $ips) {
-                $reversedIP = ($IP -split '\.')[3..0] -join '.'
-                $fqdn = "$reversedIP.$server"
-                try {
-                    $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
-                } catch { $DnsCheck = $null }
-                if ($DnsCheck -ne $null) {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $true
-                        Answer    = $DnsCheck.IPAddress -join ', '
-                        TTL       = $DnsCheck.TTL
-                    }
-                } else {
-                    $ServerData = @{
-                        IP        = $ip
-                        FQDN      = $fqdn
-                        BlackList = $server
-                        IsListed  = $false
-                        Answer    = $DnsCheck.IPAddress
-                        TTL       = ''
-                    }
-                }
-                $WORKFLOW:blacklistedOn += $ServerData
-            }
-        }
-        return $WORKFLOW:blacklistedOn
-    }
+
     $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
 
     $table = $(foreach ($ht in $Output) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
