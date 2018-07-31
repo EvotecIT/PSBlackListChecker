@@ -11,7 +11,7 @@
     RootModule        = 'PSBlackListChecker.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.3'
+    ModuleVersion     = '0.4'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -69,7 +69,7 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = 'Search-BlackList', 'Start-ReportBlackLists'
+    FunctionsToExport = 'Search-BlackList', 'Start-ReportBlackLists', 'Search-BlackList1', 'Search-BlackList2', 'Search-BlackList3'
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport   = @()
@@ -95,7 +95,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags         = 'blacklist', 'exchange', 'dnsbl'
+            Tags         = 'blacklist', 'exchange', 'dnsbl', 'msexchange', 'microsoft'
 
             # A URL to the license for this module.
             # LicenseUri = ''
@@ -116,7 +116,7 @@
     } # End of PrivateData hashtable
 
     # HelpInfo URI of this module
-    HelpInfoURI       = 'https://github.com/EvotecIT/PSBlackListChecker'
+    #HelpInfoURI       = 'https://github.com/EvotecIT/PSBlackListChecker'
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
     # DefaultCommandPrefix = ''
