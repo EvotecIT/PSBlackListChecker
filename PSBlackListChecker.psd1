@@ -31,7 +31,6 @@
     # Description of the functionality provided by this module
     Description       = 'This module allows you to easily check if your defined list of IPs are on any of defined blacklists. It additionally allows you to easily setup Task Scheduled monitoring and send you reports daily / hourly or weekly if needed.'
 
-
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '3.0'
 
@@ -51,7 +50,7 @@
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = ''
+    #RequiredModules   = ''
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -104,7 +103,7 @@
             ProjectUri   = 'https://github.com/EvotecIT/PSBlackListChecker'
 
             # A URL to an icon representing this module.
-            # IconUri = ''
+            IconUri      = 'https://evotec.xyz/wp-content/uploads/2018/10/PSBlackListChecker.png'
 
             # ReleaseNotes of this module
             ReleaseNotes = '
