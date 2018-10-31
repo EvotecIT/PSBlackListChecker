@@ -13,7 +13,7 @@ workflow Get-BlacklistsNetDNS {
             try {
                 $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
             } catch { $DnsCheck = $null }
-            if ($DnsCheck -ne $null) {
+            if ($null -ne $DnsCheck) {
                 $ServerData = @{
                     IP        = $ip
                     FQDN      = $fqdn
