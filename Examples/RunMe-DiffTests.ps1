@@ -4,10 +4,25 @@ Import-Module PSBlackListChecker.psm1 -Force
 
 $RunTypes = 'NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS'
 
+$Results = @()
 foreach ($RunType in $RunTypes) {
-    Write-Color '[', 'start', ']', ' Testing ', $RunType -Color White, Yellow, White, White, Yellow
+    Write-Color '[', 'start ', ']', ' Testing ', $RunType -Color White, Green, White, White, Yellow
     $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
-    Search-BlackList -IP '89.74.48.96' -RunType $RunType | Format-Table -AutoSize
+    $BlackList = Search-BlackList -IP '89.74.48.96' -RunType $RunType -ReturnAll
     $StopWatch.Stop()
-    Write-Color '[', 'end  ', ']', ' Elapsed ', $RunType, ' minutes: ', $StopWatch.Elapsed.Minutes, ' seconds: ', $StopWatch.Elapsed.Seconds, ' Milliseconds: ', $StopWatch.Elapsed.Milliseconds -Color White, Yellow, White, White, Yellow, White, Yellow, White, Green, White, Green, White, Green
+    $BlackListListed = $BlackList | Where { $_.Islisted -eq $true }
+    $BlackListListed | Format-Table -AutoSize
+    Write-Color '[', 'output', ']', ' Blacklist Count ', $Blacklist.Count, ' Blacklist Listed Count ', $($BlackListListed.Count) -Color White, Yellow, White, White, Gray, White, Green
+    Write-Color '[', 'end   ', ']', ' Elapsed ', $RunType, ' minutes: ', $StopWatch.Elapsed.Minutes, ' seconds: ', $StopWatch.Elapsed.Seconds, ' Milliseconds: ', $StopWatch.Elapsed.Milliseconds -Color White, Red, White, White, Yellow, White, Yellow, White, Green, White, Green, White, Green
+
+    $Results += ([ordered]@{
+            RunType             = $RunType
+            'BlackList All'     = $Blacklist.Count
+            'BlackList Found'   = $BlackListListed.Count
+            'Time Minutes'      = $StopWatch.Elapsed.Minutes
+            'Time Seconds'      = $StopWatch.Elapsed.Seconds
+            'Time Milliseconds' = $StopWatch.Elapsed.Milliseconds
+        }).ForEach( {[PSCustomObject]$_})
 }
+
+$Results | Format-Table -Autosize
