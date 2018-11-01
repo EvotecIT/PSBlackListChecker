@@ -18,7 +18,7 @@ $Script:ScriptBlockResolveDNS = {
             BlackList = $Server
             IsListed  = $true
             Answer    = $DnsCheck.IPAddress -join ', '
-            TTL       = $DnsCheck.TTL
+            TTL       = $DnsCheck.TTL -join ', '
         }
     } else {
         $ServerData = [PSCustomObject]  @{
@@ -26,7 +26,7 @@ $Script:ScriptBlockResolveDNS = {
             FQDN      = $FQDN
             BlackList = $Server
             IsListed  = $false
-            Answer    = $DnsCheck.IPAddress
+            Answer    = $DnsCheck.IPAddress -join ', '
             TTL       = ''
         }
     }

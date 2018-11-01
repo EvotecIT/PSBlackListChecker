@@ -17,7 +17,7 @@ workflow Get-BlacklistsResolveDNS {
                     BlackList = $Server
                     IsListed  = $true
                     Answer    = $DnsCheck.IPAddress -join ', '
-                    TTL       = $DnsCheck.TTL
+                    TTL       = $DnsCheck.TTL -join ', '
                 }
             } else {
                 $ServerData = [PSCustomObject]  @{
@@ -25,7 +25,7 @@ workflow Get-BlacklistsResolveDNS {
                     FQDN      = $FQDN
                     BlackList = $Server
                     IsListed  = $false
-                    Answer    = $DnsCheck.IPAddress
+                    Answer    = $DnsCheck.IPAddress -join ', '
                     TTL       = ''
                 }
             }

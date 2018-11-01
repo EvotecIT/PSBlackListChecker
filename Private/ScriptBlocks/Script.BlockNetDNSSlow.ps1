@@ -30,7 +30,7 @@ $Script:ScriptBlockNetDNSSlow = {
                 FQDN      = $FQDN
                 BlackList = $Server
                 IsListed  = $false
-                Answer    = $DnsCheck.IPAddress
+                Answer    = $DnsCheck.IPAddress -join ', '
                 TTL       = ''
             }
         }

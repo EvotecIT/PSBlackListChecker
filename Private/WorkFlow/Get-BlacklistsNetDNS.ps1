@@ -19,7 +19,7 @@ workflow Get-BlacklistsNetDNS {
                     BlackList = $Server
                     IsListed  = $true
                     Answer    = $DnsCheck.IPAddress -join ', '
-                    TTL       = $DnsCheck.TTL
+                    TTL       = $DnsCheck.TTL -join ', '
                 }
             } else {
                 $ServerData = [PSCustomObject] @{
