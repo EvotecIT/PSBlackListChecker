@@ -1,6 +1,5 @@
 Clear-Host
-Import-Module PSBlackListChecker.psm1 -Force
-#Import-Module $PSScriptRoot\..\PSBlackListChecker.psm1 -Force
+Import-Module PSBlackListChecker -Force
 
 $RunTypes = 'NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS'
 
@@ -10,7 +9,7 @@ foreach ($RunType in $RunTypes) {
     $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
     $BlackList = Search-BlackList -IP '89.74.48.96' -RunType $RunType -ReturnAll
     $StopWatch.Stop()
-    $BlackListListed = $BlackList | Where { $_.Islisted -eq $true }
+    $BlackListListed = $BlackList | Where-Object { $_.Islisted -eq $true }
     $BlackListListed | Format-Table -AutoSize
     Write-Color '[', 'output', ']', ' Blacklist Count ', $Blacklist.Count, ' Blacklist Listed Count ', $($BlackListListed.Count) -Color White, Yellow, White, White, Gray, White, Green
     Write-Color '[', 'end   ', ']', ' Elapsed ', $RunType, ' minutes: ', $StopWatch.Elapsed.Minutes, ' seconds: ', $StopWatch.Elapsed.Seconds, ' Milliseconds: ', $StopWatch.Elapsed.Milliseconds -Color White, Red, White, White, Yellow, White, Yellow, White, Green, White, Green, White, Green

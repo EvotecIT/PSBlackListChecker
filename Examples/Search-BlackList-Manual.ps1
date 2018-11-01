@@ -1,4 +1,4 @@
-Import-Module PSBlackListChecker.psm1 -Force
+Import-Module PSBlackListChecker -Force
 
 Search-Blacklist -IP '89.74.48.96' -RunType NoWorkflowAndRunSpaceNetDNS -Verbose
 

@@ -1,4 +1,4 @@
-Import-Module .\PSBlackListChecker.psm1 -Force
+Import-Module PSBlackListChecker -Force
 
 $EmailParameters = @{
     EmailFrom            = "monitoring@domain.pl"

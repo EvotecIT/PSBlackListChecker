@@ -11,6 +11,8 @@ function Search-BlackList {
 
       .PARAMETER ReturnAll
 
+      .PARAMETER RunType
+
       .PARAMETER SortBy
 
       .PARAMETER SortDescending
