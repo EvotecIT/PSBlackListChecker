@@ -1,4 +1,9 @@
-function Set-EmailReportDetails($FormattingOptions, $ReportOptions, $TimeToGenerate) {
+function Set-EmailReportDetails {
+    param(
+        $FormattingOptions,
+        $ReportOptions,
+        $TimeToGenerate
+    )
     $DateReport = get-date
     # HTML Report settings
     $Report = "<p style=`"background-color:white;font-family:$($FormattingOptions.FontFamily);font-size:$($FormattingOptions.FontSize)`">"

@@ -1,12 +1,18 @@
-function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $ReportOptions) {
-    $EmailBody = Set-EmailHead  -FormattingOptions $FormattingParameters
-    $EmailBody += Set-EmailReportBrading -FormattingOptions $FormattingParameters
+function Start-ReportBlackLists {
+    [cmdletbinding()]
+    param(
+        $EmailParameters,
+        $FormattingParameters,
+        $ReportOptions
+    )
+    $EmailBody = Set-EmailHead -FormattingOptions $FormattingParameters
+    $EmailBody += Set-EmailReportBranding -FormattingOptions $FormattingParameters
 
     $Ips = @()
     foreach ($ip in $ReportOptions.MonitoredIps.Values) {
         $Ips += $ip
     }
-    $time = Measure-Command -Expression {
+    $Time = Measure-Command -Expression {
         if ($ReportOptions.EmailAllResults) {
             $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -ReturnAll
         } else {
@@ -22,10 +28,10 @@ function Start-ReportBlackLists ($EmailParameters, $FormattingParameters, $Repor
         $EmailParameters.EmailPriority = $ReportOptions.EmailPriorityStandard
     }
     # Sending email - finalizing package
-    if ($ReportOptions.EmailAlways -eq $true) {
-        $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody
-    } else {
-        if ($BlackListCheck.IsListed -contains $true) {
+    if ($ReportOptions.EmailAlways -eq $true -or $BlackListCheck.IsListed -contains $true) {
+        if ($FormattingParameters.CompanyBranding.Inline) {
+            $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody -InlineAttachments @{logo = $FormattingParameters.CompanyBranding.Logo} -Verbose
+        } else {
             $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody
         }
     }
