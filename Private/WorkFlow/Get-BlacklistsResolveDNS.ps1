@@ -8,7 +8,7 @@ workflow Get-BlacklistsResolveDNS {
     foreach -parallel ($Server in $BlacklistServers) {
         foreach ($IP in $Ips) {
             $ReversedIP = ($IP -split '\.')[3..0] -join '.'
-            $FQDN = "$reversedIP.$Server"
+            $FQDN = "$ReversedIP.$Server"
             $DnsCheck = Resolve-DnsName -Name $FQDN -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
             if ($null -ne $DnsCheck) {
                 $ServerData = [PSCustomObject]  @{
@@ -25,7 +25,7 @@ workflow Get-BlacklistsResolveDNS {
                     FQDN      = $FQDN
                     BlackList = $Server
                     IsListed  = $false
-                    Answer    = $DnsCheck.IPAddress -join ', '
+                    Answer    = ''
                     TTL       = ''
                 }
             }

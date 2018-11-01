@@ -44,15 +44,20 @@ $ReportOptions = @{
     NotificationsTeams = @{
         Use              = $false
         TeamsID          = ''
-        MessageTitle     = 'Exchange IP Blacklisted'
-        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20120.png'
+        MessageTitle     = 'IP Blacklisted'
+        MessageText      = 'Everybody panic!'
+        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20130.png'
+        MessageButtons   = $true
     }
     NotificationsSlack = @{
-        Use              = $false
-        Channel          = '#general'
-        Uri              = ""
-        MessageTitle     = 'Exchange IP Blacklisted'
-        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20120.png'
+        Use            = $false
+        Channel        = '#general'
+        Uri            = ""
+        MessageTitle   = 'IP Blacklisted'
+        MessageText    = 'Everybody panic!'
+        MessageButtons = $true
+        MessageEmoji   = ':hankey:'  # Emoji List https://www.webpagefx.com/tools/emoji-cheat-sheet/
+        MessageAsUser  = 'PSBlackListChecker'
     }
 }
 

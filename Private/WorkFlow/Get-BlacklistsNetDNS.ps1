@@ -27,7 +27,7 @@ workflow Get-BlacklistsNetDNS {
                     FQDN      = $FQDN
                     BlackList = $Server
                     IsListed  = $false
-                    Answer    = $DnsCheck.IPAddress
+                    Answer    = ''
                     TTL       = ''
                 }
             }
