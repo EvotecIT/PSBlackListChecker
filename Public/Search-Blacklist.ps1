@@ -26,7 +26,7 @@ function Search-BlackList {
     param
     (
         [string[]] $IPs,
-        [string[]] $BlacklistServers = $BlackLists,
+        [string[]] $BlacklistServers = $Script:BlackLists,
         [switch] $ReturnAll,
         [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
@@ -37,9 +37,9 @@ function Search-BlackList {
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { $Verbose = $true } else { $Verbose = $false }
 
     If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
-        $Output = Invoke-Command -ScriptBlock $ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+        $Output = Invoke-Command -ScriptBlock $Script:ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
     } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
-        $Output = Invoke-Command -ScriptBlock $ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+        $Output = Invoke-Command -ScriptBlock $Script:ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
     } elseif ($RunType -eq 'WorkflowResolveDNS') {
         $Output = Get-BlacklistsResolveDNS -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
     } elseif ($RunType -eq 'WorkflowWithNetDNS') {
@@ -50,15 +50,15 @@ function Search-BlackList {
         $pool = New-Runspace -MaxRunspaces $maxRunspaces -Verbose:$Verbose
         ### Define Runspace END
 
-        foreach ($server in $BlacklistServers) {
-            foreach ($ip in $ips) {
-                $Parameters = [ordered] @{
+        foreach ($Server in $BlacklistServers) {
+            foreach ($IP in $IPs) {
+                $Parameters = @{
                     Server       = $Server
                     IP           = $IP
                     QuickTimeout = $QuickTimeout
                     Verbose      = $Verbose
                 }
-                $runspaces += Start-Runspace -ScriptBlock $ScriptBlockResolveDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
+                $runspaces += Start-Runspace -ScriptBlock $Script:ScriptBlockResolveDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
             }
         }
         ### End Runspaces START
@@ -73,31 +73,28 @@ function Search-BlackList {
 
         foreach ($server in $BlacklistServers) {
             foreach ($ip in $ips) {
-                $Parameters = [ordered] @{
+                $Parameters = @{
                     Server       = $Server
                     IP           = $IP
                     QuickTimeout = $QuickTimeout
                     Verbose      = $Verbose
                 }
-                $runspaces += Start-Runspace -ScriptBlock $ScriptBlockNetDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
+                $runspaces += Start-Runspace -ScriptBlock $Script:ScriptBlockNetDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
             }
         }
-        #    $Output = Get-Blacklists -BlacklistServers $BlacklistServers -Ips $IPs -QuickTimeout $QuickTimeout
-
         ### End Runspaces START
         $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose
         ### End Runspaces END
     }
 
-    $table = $(foreach ($ht in $Output) {new-object PSObject -Property $ht}) | Select-Object IP, BlackList, IsListed, Answer, TTL, FQDN
     if ($SortDescending -eq $true) {
-        $table = $table | Sort-Object $SortBy -Descending
+        $Table = $Output | Sort-Object $SortBy -Descending
     } else {
-        $table = $table | Sort-Object $SortBy
+        $Table = $Output | Sort-Object $SortBy
     }
     if ($ReturnAll -eq $true) {
-        return $table
+        return $Table
     } else {
-        return $table | Where-Object { $_.IsListed -eq $true }
+        return $Table | Where-Object { $_.IsListed -eq $true }
     }
 }

@@ -1,4 +1,4 @@
-$ScriptBlockResolveDNSSlow = {
+$Script:ScriptBlockResolveDNSSlow = {
     param (
         [string[]] $Servers,
         [string] $IP,
@@ -8,33 +8,33 @@ $ScriptBlockResolveDNSSlow = {
     if ($Verbose) {
         $verbosepreference = 'continue'
     }
-    $BlacklistedOn = @()
+    $Blacklisted = @()
     foreach ($Server in $Servers) {
 
-        $reversedIP = ($IP -split '\.')[3..0] -join '.'
-        $fqdn = "$reversedIP.$server"
+        $ReversedIP = ($IP -split '\.')[3..0] -join '.'
+        $FQDN = "$ReversedIP.$Server"
         $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
         if ($null -ne $DnsCheck) {
-            $ServerData = @{
-                IP        = $ip
-                FQDN      = $fqdn
-                BlackList = $server
+            $ServerData = [PSCustomObject] @{
+                IP        = $IP
+                FQDN      = $FQDN
+                BlackList = $Server
                 IsListed  = $true
                 Answer    = $DnsCheck.IPAddress -join ', '
                 TTL       = $DnsCheck.TTL
             }
         } else {
-            $ServerData = @{
-                IP        = $ip
-                FQDN      = $fqdn
-                BlackList = $server
+            $ServerData = [PSCustomObject] @{
+                IP        = $IP
+                FQDN      = $FQDN
+                BlackList = $Server
                 IsListed  = $false
                 Answer    = $DnsCheck.IPAddress
                 TTL       = ''
             }
         }
-        $BlackListedOn += $ServerData
+        $Blacklisted += $ServerData
 
     }
-    return $BlacklistedOn
+    return $Blacklisted
 }

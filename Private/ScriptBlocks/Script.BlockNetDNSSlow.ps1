@@ -1,4 +1,4 @@
-$ScriptBlockNetDNSSlow = {
+$Script:ScriptBlockNetDNSSlow = {
     param (
         [string[]] $Servers,
         [string] $IP,
@@ -8,17 +8,15 @@ $ScriptBlockNetDNSSlow = {
     if ($Verbose) {
         $verbosepreference = 'continue'
     }
-    $BlacklistedOn = @()
+    $Blacklisted = @()
     foreach ($Server in $Servers) {
-
-        $reversedIP = ($IP -split '\.')[3..0] -join '.'
-        $fqdn = "$reversedIP.$server"
+        $ReversedIP = ($IP -split '\.')[3..0] -join '.'
+        $FQDN = "$ReversedIP.$Server"
         try {
-            $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
-
+            $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
         } catch { $DnsCheck = $null }
         if ($DnsCheck -ne $null) {
-            $ServerData = @{
+            $Blacklisted += [PSCustomObject] @{
                 IP        = $ip
                 FQDN      = $fqdn
                 BlackList = $server
@@ -27,17 +25,15 @@ $ScriptBlockNetDNSSlow = {
                 TTL       = ''
             }
         } else {
-            $ServerData = @{
-                IP        = $ip
-                FQDN      = $fqdn
-                BlackList = $server
+            $Blacklisted += [PSCustomObject] @{
+                IP        = $IP
+                FQDN      = $FQDN
+                BlackList = $Server
                 IsListed  = $false
                 Answer    = $DnsCheck.IPAddress
                 TTL       = ''
             }
         }
-        $BlackListedOn += $ServerData
-
     }
-    return $BlacklistedOn
+    return $Blacklisted
 }

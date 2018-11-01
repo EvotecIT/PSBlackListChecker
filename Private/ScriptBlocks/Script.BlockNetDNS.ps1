@@ -1,4 +1,4 @@
-$ScriptBlockNetDNS = {
+$Script:ScriptBlockNetDNS = {
     param (
         [string] $Server,
         [string] $IP,
@@ -8,25 +8,25 @@ $ScriptBlockNetDNS = {
     if ($Verbose) {
         $verbosepreference = 'continue'
     }
-    $reversedIP = ($IP -split '\.')[3..0] -join '.'
-    $fqdn = "$reversedIP.$server"
+    $ReversedIP = ($IP -split '\.')[3..0] -join '.'
+    $FQDN = "$ReversedIP.$Server"
     try {
         $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
     } catch { $DnsCheck = $null }
     if ($DnsCheck -ne $null) {
-        $ServerData = @{
-            IP        = $ip
-            FQDN      = $fqdn
-            BlackList = $server
+        $ServerData = [PSCustomObject] @{
+            IP        = $IP
+            FQDN      = $FQDN
+            BlackList = $Server
             IsListed  = $true
             Answer    = $DnsCheck.IPAddressToString -join ', '
             TTL       = ''
         }
     } else {
-        $ServerData = @{
-            IP        = $ip
-            FQDN      = $fqdn
-            BlackList = $server
+        $ServerData = [PSCustomObject] @{
+            IP        = $IP
+            FQDN      = $FQDN
+            BlackList = $Server
             IsListed  = $false
             Answer    = $DnsCheck.IPAddress
             TTL       = ''
