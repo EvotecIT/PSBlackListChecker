@@ -27,17 +27,33 @@ $FormattingParameters = @{
     FontHeadingSize   = "12pt"
 }
 $ReportOptions = @{
-    MonitoredIps                 = @{
+    MonitoredIps       = @{
         Ip1 = '89.25.253.1'
         Ip2 = '188.117.129.1'
         # you can add as many Ip's as you want / IP1,2,3,4,5 etc
     }
-    EmailPriorityWhenBlacklisted = 'High'
-    EmailPriorityStandard        = 'Low'
-    EmailAllResults              = $false
-    EmailAlways                  = $true
-    SortBy                       = 'IsListed' # Options: 'IP', 'BlackList', 'IsListed', 'Answer', 'FQDN
-    SortDescending               = $true
+    NotificationsEmail = @{
+        Use                          = $false
+        EmailPriorityWhenBlacklisted = 'High'
+        EmailPriorityStandard        = 'Low'
+        EmailAllResults              = $false
+        EmailAlways                  = $true
+        SortBy                       = 'IsListed' # Options: 'IP', 'BlackList', 'IsListed', 'Answer', 'FQDN
+        SortDescending               = $true
+    }
+    NotificationsTeams = @{
+        Use              = $false
+        TeamsID          = ''
+        MessageTitle     = 'Exchange IP Blacklisted'
+        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20120.png'
+    }
+    NotificationsSlack = @{
+        Use              = $false
+        Channel          = '#general'
+        Uri              = ""
+        MessageTitle     = 'Exchange IP Blacklisted'
+        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20120.png'
+    }
 }
 
 Start-ReportBlackLists -EmailParameters $EmailParameters -FormattingParameters $FormattingParameters -ReportOptions $ReportOptions
