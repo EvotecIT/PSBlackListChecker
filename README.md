@@ -1,7 +1,7 @@
 # PSBlackListChecker - PowerShell module
 
 [![Build status Appveyor](https://ci.appveyor.com/api/projects/status/k5mefm1r3ri0c71i?svg=true)](https://ci.appveyor.com/project/PrzemyslawKlys/psblacklistchecker)
-[![Build Status Windows](https://evotecpl.visualstudio.com/PSBlackListChecker/_apis/build/status/EvotecIT.PSBlackListChecker)](https://evotecpl.visualstudio.com/PSBlackListChecker/_build/latest?definitionId=3)
+[![Build Status Windows](https://dev.azure.com/evotecpl/PSBlackListChecker/_apis/build/status/EvotecIT.PSBlackListChecker)](https://dev.azure.com/evotecpl/PSBlackListChecker/_build/latest?definitionId=3)
 
 Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklistchecker/
 
