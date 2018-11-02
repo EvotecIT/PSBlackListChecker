@@ -1,0 +1,10 @@
+build: off
+
+test_script:
+  - ps:   .\PSBlackListChecker.Tests.ps1
+#  - pwsh: .\PSBlackListChecker.Tests.ps1
+
+skip_commits:
+  files:
+    - README.md
+    - Data/**/*
