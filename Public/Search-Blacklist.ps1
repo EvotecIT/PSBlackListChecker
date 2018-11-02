@@ -88,11 +88,12 @@ function Search-BlackList {
         $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose
         ### End Runspaces END
     }
+    $Table = $Output | Select-Object IP, FQDN, BlackList, IsListed, Answer, TTL
 
     if ($SortDescending -eq $true) {
-        $Table = $Output | Sort-Object $SortBy -Descending
+        $Table = $Table | Sort-Object $SortBy -Descending
     } else {
-        $Table = $Output | Sort-Object $SortBy
+        $Table = $Table | Sort-Object $SortBy
     }
     if ($ReturnAll -eq $true) {
         return $Table

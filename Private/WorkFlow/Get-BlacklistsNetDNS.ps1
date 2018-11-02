@@ -11,13 +11,15 @@ workflow Get-BlacklistsNetDNS {
             $FQDN = "$ReversedIP.$Server"
             try {
                 $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
-            } catch { $DnsCheck = $null }
+            } catch {
+                $DnsCheck = $null
+            }
             if ($null -ne $DnsCheck) {
                 $ServerData = [PsCustomObject] @{
                     IP        = $IP
                     FQDN      = $FQDN
                     BlackList = $Server
-                    IsListed  = $true
+                    IsListed  = if ($null -eq $DNSCheck.IpAddress) { $false } else { $true }
                     Answer    = $DnsCheck.IPAddress -join ', '
                     TTL       = $DnsCheck.TTL -join ', '
                 }

@@ -12,13 +12,15 @@ $Script:ScriptBlockNetDNS = {
     $FQDN = "$ReversedIP.$Server"
     try {
         $DnsCheck = [Net.DNS]::GetHostAddresses($fqdn)
-    } catch { $DnsCheck = $null }
+    } catch {
+        $DnsCheck = $null
+    }
     if ($DnsCheck -ne $null) {
         $ServerData = [PSCustomObject] @{
             IP        = $IP
             FQDN      = $FQDN
             BlackList = $Server
-            IsListed  = $true
+            IsListed  = if ($null -eq $DNSCheck.IPAddressToString) { $false } else { $true }
             Answer    = $DnsCheck.IPAddressToString -join ', '
             TTL       = ''
         }

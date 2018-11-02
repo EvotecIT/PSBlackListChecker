@@ -14,13 +14,15 @@ $Script:ScriptBlockNetDNSSlow = {
         $FQDN = "$ReversedIP.$Server"
         try {
             $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
-        } catch { $DnsCheck = $null }
+        } catch {
+            $DnsCheck = $null
+        }
         if ($DnsCheck -ne $null) {
             $Blacklisted += [PSCustomObject] @{
                 IP        = $ip
                 FQDN      = $fqdn
                 BlackList = $server
-                IsListed  = $true
+                IsListed  = if ($null -eq $DNSCheck.IPAddressToString) { $false } else { $true }
                 Answer    = $DnsCheck.IPAddressToString -join ', '
                 TTL       = ''
             }

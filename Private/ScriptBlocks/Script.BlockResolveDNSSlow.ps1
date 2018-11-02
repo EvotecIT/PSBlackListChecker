@@ -19,7 +19,7 @@ $Script:ScriptBlockResolveDNSSlow = {
                 IP        = $IP
                 FQDN      = $FQDN
                 BlackList = $Server
-                IsListed  = $true
+                IsListed  = if ($null -eq $DNSCheck.IpAddress) { $false } else { $true }
                 Answer    = $DnsCheck.IPAddress -join ', '
                 TTL       = $DnsCheck.TTL -join ', '
             }
