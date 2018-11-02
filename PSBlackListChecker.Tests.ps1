@@ -23,7 +23,7 @@ if ($null -eq $Module) {
     Install-Module -Name PSWriteColor -Repository PSGallery -Force -Scope CurrentUser
 }
 
-$result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID } }
+$result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID } } -EnableExit
 
 if ($result.FailedCount -gt 0) {
     throw "$($result.FailedCount) tests failed."
