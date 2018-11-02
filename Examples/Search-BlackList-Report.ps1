@@ -1,4 +1,4 @@
-Import-Module PSBlackListChecker -Force
+Import-Module PSBlackListChecker
 
 $EmailParameters = @{
     EmailFrom            = "monitoring@domain.pl"
@@ -20,6 +20,7 @@ $FormattingParameters = @{
         Width  = "200"
         Height = ""
         Link   = "https://evotec.xyz"
+        Inline = $false
     }
     FontFamily        = "Calibri Light"
     FontSize          = "9pt"

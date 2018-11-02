@@ -35,7 +35,7 @@
     PowerShellVersion    = '5.1'
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules      = @('PSSharedGoods', 'PSWriteColor')
+    RequiredModules      = @('PSSharedGoods', 'PSWriteColor', 'PSSlack', 'PSTeams')
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = 'Search-BlackList', 'Start-ReportBlackLists'

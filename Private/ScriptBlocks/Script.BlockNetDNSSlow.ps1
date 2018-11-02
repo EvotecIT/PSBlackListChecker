@@ -1,7 +1,7 @@
 $Script:ScriptBlockNetDNSSlow = {
     param (
         [string[]] $Servers,
-        [string] $IP,
+        [string[]] $IPs,
         [bool] $QuickTimeout,
         [bool] $Verbose
     )
@@ -10,30 +10,32 @@ $Script:ScriptBlockNetDNSSlow = {
     }
     $Blacklisted = @()
     foreach ($Server in $Servers) {
-        $ReversedIP = ($IP -split '\.')[3..0] -join '.'
-        $FQDN = "$ReversedIP.$Server"
-        try {
-            $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
-        } catch {
-            $DnsCheck = $null
-        }
-        if ($null -ne $DnsCheck) {
-            $Blacklisted += [PSCustomObject] @{
-                IP        = $ip
-                FQDN      = $fqdn
-                BlackList = $server
-                IsListed  = if ($null -eq $DNSCheck.IPAddressToString) { $false } else { $true }
-                Answer    = $DnsCheck.IPAddressToString -join ', '
-                TTL       = ''
+        foreach ($IP in $IPS) {
+            $ReversedIP = ($IP -split '\.')[3..0] -join '.'
+            $FQDN = "$ReversedIP.$Server"
+            try {
+                $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
+            } catch {
+                $DnsCheck = $null
             }
-        } else {
-            $Blacklisted += [PSCustomObject] @{
-                IP        = $IP
-                FQDN      = $FQDN
-                BlackList = $Server
-                IsListed  = $false
-                Answer    = ''
-                TTL       = ''
+            if ($null -ne $DnsCheck) {
+                $Blacklisted += [PSCustomObject] @{
+                    IP        = $ip
+                    FQDN      = $fqdn
+                    BlackList = $server
+                    IsListed  = if ($null -eq $DNSCheck.IPAddressToString) { $false } else { $true }
+                    Answer    = $DnsCheck.IPAddressToString -join ', '
+                    TTL       = ''
+                }
+            } else {
+                $Blacklisted += [PSCustomObject] @{
+                    IP        = $IP
+                    FQDN      = $FQDN
+                    BlackList = $Server
+                    IsListed  = $false
+                    Answer    = ''
+                    TTL       = ''
+                }
             }
         }
     }
