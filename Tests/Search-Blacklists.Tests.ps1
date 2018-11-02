@@ -35,7 +35,7 @@ Describe 'Search-Blacklists - Should test IP for blacklists' {
     }
     It 'Given 1 IP - Workflow using [Net.DNS] - Should return at least 2 listed blacklists' {
         $BlackList = Search-Blacklist -IP $IP -RunType WorkflowWithNetDNS
-        $BlackList.Count | Should -BeGreaterThan 10
+        $BlackList.Count | Should -BeGreaterThan 2
         $BlackList.IsListed | Should -Contain $True
     }
 }
