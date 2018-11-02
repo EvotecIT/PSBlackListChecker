@@ -5,10 +5,6 @@ param (
 $PSVersionTable.PSVersion
 
 $ModuleName = (Get-ChildItem $PSScriptRoot\*.psd1).BaseName
-#$ModuleVersion = (Get-Content -Raw $PSScriptRoot\*.psd1)  | Invoke-Expression | ForEach-Object ModuleVersion
-
-#$Dest = "Builds\$ModuleName-{0}-{1}.zip" -f $ModuleVersion, (Get-Date).ToString("yyyyMMddHHmmss")
-#Compress-Archive -Path . -DestinationPath .\$dest
 
 $Pester = (Get-Module -ListAvailable pester)
 if ($null -eq $Pester -or ($Pester[0].Version.Major -le 4 -and $Pester[0].Version.Minor -lt 4)) {
@@ -21,7 +17,12 @@ if ($null -eq $Module) {
     Install-Module -Name PSSharedGoods -Repository PSGallery -Force -Scope CurrentUser
 }
 
-#$result = Invoke-Pester -Script $PSScriptRoot\Tests -PassThru
+$Module = Get-Module -ListAvailable PSWriteColor
+if ($null -eq $Module) {
+    Write-Warning "$ModuleName - Downloading PSWriteColor from PSGallery"
+    Install-Module -Name PSWriteColor -Repository PSGallery -Force -Scope CurrentUser
+}
+
 $result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID } }
 
 if ($result.FailedCount -gt 0) {
