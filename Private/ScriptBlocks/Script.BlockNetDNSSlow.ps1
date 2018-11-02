@@ -17,7 +17,7 @@ $Script:ScriptBlockNetDNSSlow = {
         } catch {
             $DnsCheck = $null
         }
-        if ($DnsCheck -ne $null) {
+        if ($null -ne $DnsCheck) {
             $Blacklisted += [PSCustomObject] @{
                 IP        = $ip
                 FQDN      = $fqdn

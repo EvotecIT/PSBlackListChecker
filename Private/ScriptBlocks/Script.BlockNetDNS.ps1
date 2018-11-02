@@ -15,7 +15,7 @@ $Script:ScriptBlockNetDNS = {
     } catch {
         $DnsCheck = $null
     }
-    if ($DnsCheck -ne $null) {
+    if ($null -ne $DnsCheck) {
         $ServerData = [PSCustomObject] @{
             IP        = $IP
             FQDN      = $FQDN

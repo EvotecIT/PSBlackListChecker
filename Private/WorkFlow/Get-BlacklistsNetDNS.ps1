@@ -1,4 +1,5 @@
 workflow Get-BlacklistsNetDNS {
+    [cmdletbinding()]
     param (
         [string[]] $BlacklistServers,
         [string[]] $Ips,
@@ -14,13 +15,14 @@ workflow Get-BlacklistsNetDNS {
             } catch {
                 $DnsCheck = $null
             }
+            #Write-Verbose "PSBlackListChecker [WorkFlow.Get-BlacklistsNetDNS] - Server: $Server Ip: $IP FQDN: $FQDN Response: $($DnsCheck.IPAddressToString)"
             if ($null -ne $DnsCheck) {
                 $ServerData = [PsCustomObject] @{
                     IP        = $IP
                     FQDN      = $FQDN
                     BlackList = $Server
-                    IsListed  = if ($null -eq $DNSCheck.IpAddress) { $false } else { $true }
-                    Answer    = $DnsCheck.IPAddress -join ', '
+                    IsListed  = if ($null -eq $DNSCheck.IPAddressToString) { $false } else { $true }
+                    Answer    = $DnsCheck.IPAddressToString -join ', '
                     TTL       = $DnsCheck.TTL -join ', '
                 }
             } else {

@@ -1,4 +1,5 @@
 workflow Get-BlacklistsResolveDNS {
+    [cmdletbinding()]
     param (
         [string[]] $BlacklistServers,
         [string[]] $Ips,

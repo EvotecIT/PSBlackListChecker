@@ -11,7 +11,7 @@ $Script:ScriptBlockResolveDNS = {
     $ReversedIP = ($IP -split '\.')[3..0] -join '.'
     $FQDN = "$ReversedIP.$Server"
     $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
-    if ($DnsCheck -ne $null) {
+    if ($null -ne $DnsCheck) {
         $ServerData = [PSCustomObject] @{
             IP        = $IP
             FQDN      = $FQDN
