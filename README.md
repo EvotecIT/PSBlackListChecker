@@ -15,6 +15,17 @@ Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklist
 - [x] Slack Alerts (just **blacklisted**)
 
 
+## Updates
+- 0.6 - 2018.11.02 - [Full blog post](https://evotec.xyz/psblacklistchecker-notifications-to-microsoft-teams-slack-of-blacklisted-ips/)
+    - Added Teams support
+    - Added Slack support
+    - Rewritten logic - added runspaces
+- 0.3 - 2018.05.06
+    - First working release
+- 0.1 - 2018.04.27
+    - First draft release
+
+
 ## Install How-To
 
 ```
@@ -42,3 +53,17 @@ WorkflowWithNetDNS                         78               3            0      
 RunSpaceWithResolveDNS                     78               3            0           12               376
 RunSpaceWithNetDNS                         78               3            0           10               615
 ```
+
+### Example screen (Email)
+
+![image](https://evotec.xyz/wp-content/uploads/2018/04/img_5ae624e384d2c.png)
+
+
+### Example screen (Microsoft Teams)
+
+![image](https://evotec.xyz/wp-content/uploads/2018/11/img_5bdca1f52c3c8.png)
+
+
+### Example screen (Slack)
+
+![image](https://evotec.xyz/wp-content/uploads/2018/11/img_5bdca221efcaf.png)
