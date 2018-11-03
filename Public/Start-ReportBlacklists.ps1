@@ -110,5 +110,37 @@ function Start-ReportBlackLists {
                 Send-SlackMessage -Uri $ReportOptions.NotificationsSlack.URI
             #Write-Color @script:WriteParameters -Text "[i] Slack output: ", $Data -Color White, Yellow
         }
+
+        if ($ReportOptions.NotificationsDiscord.Use) {
+            try {
+                $EmbedBuilder = [DiscordEmbed]::New('', $ReportOptions.NotificationsDiscord.MessageText)
+                foreach ($Server in $BlackListLimited) {
+                    [string] $ActivityTitle = "Blacklisted IP $($Server.IP)"
+                    [string] $ActivityValue = "Found on blacklist $($Server.Blacklist)"
+
+                    $embedBuilder.AddField(
+                        [DiscordField]::New(
+                            $ActivityTitle,
+                            $ActivityValue,
+                            $false
+                        )
+                    )
+                }
+                $EmbedBuilder.WithColor([DiscordColor]::New($ReportOptions.NotificationsDiscord.MessageColor)  )
+                $EmbedBuilder.AddAuthor([DiscordAuthor]::New('PSBlackListChecker', $ReportOptions.NotificationsDiscord.MessageImageLink ))
+                $EmbedBuilder.AddThumbnail([DiscordThumbnail]::New($ReportOptions.NotificationsDiscord.MessageImageLink))
+
+                Invoke-PSDsHook -WebhookUrl $ReportOptions.NotificationsDiscord.Uri -EmbedObject $embedBuilder
+            } catch {
+                $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
+                if ($ErrorMessage -like '*DiscordEmbed*') {
+                    Write-Warning "Couldn't send to Discord - Remember to Install PSDsHook module and add 'using module PSDsHook' to the top of starting script."
+                } else {
+                    Write-Warning "Couldn't send to Discord - Error occured: $ErrorMessage"
+                }
+            }
+
+        }
+
     }
 }

@@ -1,3 +1,4 @@
+#using module PSDsHook
 Import-Module PSBlackListChecker
 
 $EmailParameters = @{
@@ -28,12 +29,12 @@ $FormattingParameters = @{
     FontHeadingSize   = "12pt"
 }
 $ReportOptions = @{
-    MonitoredIps       = @{
+    MonitoredIps         = @{
         Ip1 = '89.25.253.1'
         Ip2 = '188.117.129.1'
         # you can add as many Ip's as you want / IP1,2,3,4,5 etc
     }
-    NotificationsEmail = @{
+    NotificationsEmail   = @{
         Use                          = $false
         EmailPriorityWhenBlacklisted = 'High'
         EmailPriorityStandard        = 'Low'
@@ -42,7 +43,8 @@ $ReportOptions = @{
         SortBy                       = 'IsListed' # Options: 'IP', 'BlackList', 'IsListed', 'Answer', 'FQDN
         SortDescending               = $true
     }
-    NotificationsTeams = @{
+    # Module uses PSTeams - it comes embedded with PSTeams
+    NotificationsTeams   = @{
         Use              = $false
         TeamsID          = ''
         MessageTitle     = 'IP Blacklisted'
@@ -50,7 +52,8 @@ $ReportOptions = @{
         MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20130.png'
         MessageButtons   = $true
     }
-    NotificationsSlack = @{
+    # Module uses PSSlack - it comes embedded with PSBlackListChecker
+    NotificationsSlack   = @{
         Use            = $false
         Channel        = '#general'
         Uri            = ""
@@ -59,6 +62,15 @@ $ReportOptions = @{
         MessageButtons = $true
         MessageEmoji   = ':hankey:'  # Emoji List https://www.webpagefx.com/tools/emoji-cheat-sheet/
         MessageAsUser  = 'PSBlackListChecker'
+    }
+    # Discord requires using module PSDsHook at the top
+    # It also requires Install-Module PSDsHook
+    NotificationsDiscord = @{
+        Use              = $false
+        Uri              = 'https://discordapp.com/api/webhooks/...'
+        MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20130.png'
+        MessageColor     = 'blue'
+        MessageText      = 'Everybody panic!'
     }
 }
 
