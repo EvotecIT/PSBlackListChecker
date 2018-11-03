@@ -54,6 +54,11 @@ RunSpaceWithResolveDNS                     78               3            0      
 RunSpaceWithNetDNS                         78               3            0           10               615
 ```
 
+
+### Example output (Manual)
+
+![image](https://evotec.xyz/wp-content/uploads/2018/04/img_5ae61b3ba2c75.png)
+
 ### Example screen (Email)
 
 ![image](https://evotec.xyz/wp-content/uploads/2018/04/img_5ae624e384d2c.png)
