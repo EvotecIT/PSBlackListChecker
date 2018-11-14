@@ -41,6 +41,11 @@ Install-Module PSBlackListChecker
 Update-Module PSBlackListChecker
 ```
 
+## Dependancy
+
+```
+Install-Module PSSharedGoodssea
+```
 
 ## Time to execute using different approaches
 
