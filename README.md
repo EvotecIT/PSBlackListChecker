@@ -42,9 +42,12 @@ Update-Module PSBlackListChecker
 ```
 
 ## Dependancy
+This module has dependency on couple of modules that are installed along PSBlackListChecker. Just in case it doesn't install, or you do things manually make sure you have those:
 
 ```
-Install-Module PSSharedGoodssea
+Install-Module PSTeams
+Install-Module PSSharedGoods
+Install-Module PSSlack
 ```
 
 ## Time to execute using different approaches
