@@ -27,7 +27,7 @@ function Search-BlackList {
     #>
     param
     (
-        [string[]] $IPs,
+        [alias('IP')][string[]] $IPs,
         [string[]] $BlacklistServers = $Script:BlackLists,
         [switch] $ReturnAll,
         [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
@@ -74,7 +74,7 @@ function Search-BlackList {
         ### Define Runspace END
 
         foreach ($server in $BlacklistServers) {
-            foreach ($ip in $ips) {
+            foreach ($ip in $IPs) {
                 $Parameters = @{
                     Server       = $Server
                     IP           = $IP

@@ -11,7 +11,7 @@
     RootModule        = 'PSBlackListChecker.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.7'
+    ModuleVersion     = '0.7.1'
 
     # Supported PSEditions
     #CompatiblePSEditions = @('Desktop', 'Core')
