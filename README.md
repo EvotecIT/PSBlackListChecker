@@ -1,7 +1,6 @@
 # PSBlackListChecker - PowerShell module
 
-[![Build status Appveyor](https://ci.appveyor.com/api/projects/status/k5mefm1r3ri0c71i?svg=true)](https://ci.appveyor.com/project/PrzemyslawKlys/psblacklistchecker)
-[![Build Status Windows](https://dev.azure.com/evotecpl/PSBlackListChecker/_apis/build/status/EvotecIT.PSBlackListChecker)](https://dev.azure.com/evotecpl/PSBlackListChecker/_build/latest?definitionId=3)
+[![Build Status](https://dev.azure.com/evotecpl/PSBlackListChecker/_apis/build/status/EvotecIT.PSBlackListChecker)](https://dev.azure.com/evotecpl/PSBlackListChecker/_build/latest?definitionId=3)
 
 # Short Description:
 Basic functionality of this module is ability to quickly verify if given IP address is on any of over 80 defined DNSBL lists. Below code will return results only if IP is on any of the lists. Advanced functionality of this module is ability to send reports to your email when things get bad on one of those 80 defined DNSBL listrs.
