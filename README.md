@@ -41,6 +41,14 @@ Install-Module PSBlackListChecker
 Update-Module PSBlackListChecker
 ```
 
+## Dependancy
+This module has dependency on couple of modules that are installed along PSBlackListChecker. Just in case it doesn't install, or you do things manually make sure you have those:
+
+```
+Install-Module PSTeams
+Install-Module PSSharedGoods
+Install-Module PSSlack
+```
 
 ## Time to execute using different approaches
 
@@ -75,3 +83,7 @@ RunSpaceWithNetDNS                         78               3            0      
 ### Example screen (Slack)
 
 ![image](https://evotec.xyz/wp-content/uploads/2018/11/img_5bdca221efcaf.png)
+
+### Example screen (Discord)
+
+![image](https://evotec.xyz/wp-content/uploads/2018/11/img_5bddf4c2bfdcc.png)
