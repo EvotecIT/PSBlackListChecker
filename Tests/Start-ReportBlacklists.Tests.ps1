@@ -1,3 +1,13 @@
+param (
+    $TeamsID = $Env:TEAMSPESTERID,
+    $SlackID = $Env:SLACKPESTERID,
+    $DiscordID = $Env:DiscordURL
+)
+
+#Requires -Modules Pester
+Import-Module $PSScriptRoot\..\PSBlackListChecker.psd1 -Force #-Verbose
+
+
 $EmailParameters = @{
     EmailFrom            = "monitoring@domain.pl"
     EmailTo              = "przemyslaw.klys@domain.pl" #
@@ -38,8 +48,8 @@ $ReportOptions = @{
     SortDescending       = $true
 
     MonitoredIps         = @{
-        Ip1 = '89.25.253.1'
-        Ip2 = '188.117.129.1'
+        IP = '89.74.48.96'
+        IP1 = '89.74.48.97'
         # you can add as many Ip's as you want / IP1,2,3,4,5 etc
     }
     NotificationsEmail   = @{
@@ -51,8 +61,8 @@ $ReportOptions = @{
     }
     # Module uses PSTeams - it comes embedded with PSBlackListChedcker
     NotificationsTeams   = @{
-        Use              = $false
-        TeamsID          = ''
+        Use              = $true
+        TeamsID          = $TeamsID
         MessageTitle     = 'IP Blacklisted'
         MessageText      = 'Everybody panic!'
         MessageImageLink = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20130.png'
@@ -60,8 +70,8 @@ $ReportOptions = @{
     }
     # Module uses PSSlack - it comes embedded with PSBlackListChecker
     NotificationsSlack   = @{
-        Use            = $false
-        Uri            = ""
+        Use            = $true
+        Uri            = $SlackID
         MessageTitle   = 'IP Blacklisted'
         MessageText    = 'Everybody panic!'
         MessageButtons = $true
@@ -70,8 +80,8 @@ $ReportOptions = @{
     }
     # Module uses PSDiscord - it comes embedded with PSBlackListChedcker
     NotificationsDiscord = @{
-        Use                = $false
-        Uri                = 'https://discordapp.com/api/webhooks/...'
+        Use                = $true
+        Uri                = $DiscordID
         MessageImageLink   = 'https://raw.githubusercontent.com/EvotecIT/PSTeams/master/Links/Asset%20130.png'
         MessageColor       = 'blue'
         MessageText        = 'Everybody panic!'
@@ -81,4 +91,11 @@ $ReportOptions = @{
     }
 }
 
-Start-ReportBlackLists -EmailParameters $EmailParameters -FormattingParameters $FormattingParameters -ReportOptions $ReportOptions
+Describe 'Start-ReportBlackLists - Should check blacklists' {
+    It 'Given 2 IP - Should  send notifications to teams, slack and discord' {
+        $Errors = Start-ReportBlackLists -EmailParameters $EmailParameters -FormattingParameters $FormattingParameters -ReportOptions $ReportOptions -Verbose -OutputErrors
+        $Errors.Teams | Should -Be $false
+        $Errors.Slack | Should -Be $false
+        $Errors.Discord | Should -Be $false
+    }
+}

@@ -3,16 +3,38 @@ function Start-ReportBlackLists {
     param(
         $EmailParameters,
         $FormattingParameters,
-        $ReportOptions
+        $ReportOptions,
+        [switch] $OutputErrors
     )
+    $Errors = @{
+        Teams   = $false
+        Slack   = $false
+        Discord = $false
+    }
     $EmailBody = Set-EmailHead -FormattingOptions $FormattingParameters
     $EmailBody += Set-EmailReportBranding -FormattingOptions $FormattingParameters
+
+
+    $TeamID = Format-FirstXChars -Text $ReportOptions.NotificationsTeams.TeamsID -NumberChars 25
+    $SlackID = Format-FirstXChars -Text $ReportOptions.NotificationsSlack.Uri -NumberChars 25
+    $DiscordID = Format-FirstXChars -Text $ReportOptions.NotificationsDiscord.Uri -NumberChars 25
+
+    Write-Verbose "Start-ReportBlackLists - TeamsID: $TeamID"
+    Write-Verbose "Start-ReportBlackLists - SlackID: $SlackID"
+    Write-Verbose "Start-ReportBlackLists - DiscordID: $DiscordID"
 
     $Ips = @()
     foreach ($ip in $ReportOptions.MonitoredIps.Values) {
         $Ips += $ip
     }
     $Time = Measure-Command -Expression {
+        if ($null -eq $ReportOptions.SortBy) {
+            $ReportOptions.SortBy = 'IsListed'
+        }
+        if ($null -eq $ReportOptions.SortDescending) {
+            $ReportOptions.SortDescending = $true
+        }
+
         if ($ReportOptions.NotificationsEmail.EmailAllResults) {
             $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -ReturnAll
         } else {
@@ -80,15 +102,22 @@ function Start-ReportBlackLists {
                 }
             }
 
-            $TeamsOutput = Send-TeamsMessage `
-                -URI $ReportOptions.NotificationsTeams.TeamsID `
-                -MessageTitle $MessageTitle `
-                -Color $Color `
-                -Sections $Sections `
-                -Supress $false
+            try {
+                $TeamsOutput = Send-TeamsMessage `
+                    -URI $ReportOptions.NotificationsTeams.TeamsID `
+                    -MessageTitle $MessageTitle `
+                    -Color $Color `
+                    -Sections $Sections `
+                    -Supress $false
+            } catch {
+                $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
+                Write-Warning "Couldn't send to Teams - Error occured: $ErrorMessage"
+                $Errors.Teams = $true
+            }
             #Write-Color @script:WriteParameters -Text "[i] Teams output: ", $Data -Color White, Yellow
         }
         if ($ReportOptions.NotificationsSlack.Use) {
+
             $MessageTitle = $ReportOptions.NotificationsSlack.MessageTitle
             [string] $ActivityImageLink = $ReportOptions.NotificationsSlack.MessageImageLink
 
@@ -102,45 +131,56 @@ function Start-ReportBlackLists {
                     -Fallback 'Your client is bad'
             }
 
-            $SlackOutput = New-SlackMessage -Attachments $Attachments `
-                -Channel $ReportOptions.NotificationsSlack.Channel `
-                -IconEmoji $ReportOptions.NotificationsSlack.MessageEmoji `
-                -AsUser `
-                -Username $ReportOptions.NotificationsSlack.MessageAsUser | `
-                Send-SlackMessage -Uri $ReportOptions.NotificationsSlack.URI
+            try {
+                $SlackOutput = New-SlackMessage -Attachments $Attachments `
+                    -Channel $ReportOptions.NotificationsSlack.Channel `
+                    -IconEmoji $ReportOptions.NotificationsSlack.MessageEmoji `
+                    -AsUser `
+                    -Username $ReportOptions.NotificationsSlack.MessageAsUser | `
+                    Send-SlackMessage -Uri $ReportOptions.NotificationsSlack.URI
+            } catch {
+                $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
+                Write-Warning "Couldn't send to Slack - Error occured: $ErrorMessage"
+                $Errors.Slack = $true
+            }
             #Write-Color @script:WriteParameters -Text "[i] Slack output: ", $Data -Color White, Yellow
         }
 
         if ($ReportOptions.NotificationsDiscord.Use) {
+            if ($null -eq $ReportOptions.NotificationsDiscord.MessageInline) {
+                $ReportOptions.NotificationsDiscord.MessageInline = $false
+            }
+
             try {
-                $EmbedBuilder = [DiscordEmbed]::New('', $ReportOptions.NotificationsDiscord.MessageText)
-                foreach ($Server in $BlackListLimited) {
+                $Facts = foreach ($Server in $BlackListLimited) {
                     [string] $ActivityTitle = "Blacklisted IP $($Server.IP)"
                     [string] $ActivityValue = "Found on blacklist $($Server.Blacklist)"
 
-                    $embedBuilder.AddField(
-                        [DiscordField]::New(
-                            $ActivityTitle,
-                            $ActivityValue,
-                            $false
-                        )
-                    )
+                    New-DiscordFact -Name $ActivityTitle -Value $ActivityValue -Inline $ReportOptions.NotificationsDiscord.MessageInline
                 }
-                $EmbedBuilder.WithColor([DiscordColor]::New($ReportOptions.NotificationsDiscord.MessageColor)  )
-                $EmbedBuilder.AddAuthor([DiscordAuthor]::New('PSBlackListChecker', $ReportOptions.NotificationsDiscord.MessageImageLink ))
-                $EmbedBuilder.AddThumbnail([DiscordThumbnail]::New($ReportOptions.NotificationsDiscord.MessageImageLink))
 
-                Invoke-PSDsHook -WebhookUrl $ReportOptions.NotificationsDiscord.Uri -EmbedObject $embedBuilder
+                $Thumbnail = New-DiscordThumbnail -Url $ReportOptions.NotificationsDiscord.MessageImageLink
+                $Author = New-DiscordAuthor -Name 'PSBlacklistChecker' -IconUrl  $ReportOptions.NotificationsDiscord.MessageImageLink
+                $Section = New-DiscordSection -Title $ReportOptions.NotificationsDiscord.MessageText `
+                    -Description '' `
+                    -Facts $Facts `
+                    -Color $ReportOptions.NotificationsDiscord.MessageColor `
+                    -Author $Author `
+                    -Thumbnail $Thumbnail #-Image $Thumbnail
+
+                Send-DiscordMessage -WebHookUrl $ReportOptions.NotificationsDiscord.Uri `
+                    -Sections $Section `
+                    -AvatarName $ReportOptions.NotificationsDiscord.MessageAsUser `
+                    -AvatarUrl $ReportOptions.NotificationsDiscord.MessageAsUserImage -Verbose
+
             } catch {
                 $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
-                if ($ErrorMessage -like '*DiscordEmbed*') {
-                    Write-Warning "Couldn't send to Discord - Remember to Install PSDsHook module and add 'using module PSDsHook' to the top of starting script."
-                } else {
-                    Write-Warning "Couldn't send to Discord - Error occured: $ErrorMessage"
-                }
+                Write-Warning "Couldn't send to Discord - Error occured: $ErrorMessage"
+                $Errors.Discord = $true
             }
-
         }
-
+        if ($OutputErrors) {
+            return $Errors
+        }
     }
 }

@@ -1,6 +1,7 @@
 param (
     $TeamsID = $Env:TEAMSPESTERID,
-    $SlackID = $Env:SLACKPESTERID
+    $SlackID = $Env:SLACKPESTERID,
+    $DiscordID = $Env:DiscordUrl
 )
 #Requires -Modules Pester
 Import-Module $PSScriptRoot\..\PSBlackListChecker.psd1 -Force #-Verbose

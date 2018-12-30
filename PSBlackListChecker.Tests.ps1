@@ -1,6 +1,7 @@
 param (
     $TeamsID = $Env:TEAMSPESTERID,
-    $SlackID = $Env:SLACKPESTERID
+    $SlackID = $Env:SLACKPESTERID,
+    $DiscordID = $Env:DiscordUrl
 )
 $PSVersionTable.PSVersion
 
