@@ -18,7 +18,7 @@ foreach ($Module in $RequiredModules) {
     $ModuleFound = Get-Module -ListAvailable $Module
     if ($null -eq $ModuleFound) {
         Write-Warning "$ModuleName - Downloading $Module from PSGallery"
-        Install-Module -Name $Module -Repository PSGallery -Force -Scope CurrentUser
+        Install-Module -Name $Module -Repository PSGallery -Force -Scope CurrentUser -AllowClobber
     }
 }
 
