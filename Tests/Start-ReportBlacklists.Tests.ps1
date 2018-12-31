@@ -1,7 +1,7 @@
 param (
     $TeamsID = $Env:TEAMSPESTERID,
     $SlackID = $Env:SLACKPESTERID,
-    $DiscordID = $Env:DiscordURL
+    $DiscordID = $Env:DISCORDURL
 )
 
 #Requires -Modules Pester
