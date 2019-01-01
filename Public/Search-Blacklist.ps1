@@ -30,7 +30,7 @@ function Search-BlackList {
         [alias('IP')][string[]] $IPs,
         [string[]] $BlacklistServers = $Script:BlackLists,
         [switch] $ReturnAll,
-        [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS','WorkflowResolveDNS','WorkflowWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
+        [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
         [switch] $SortDescending,
         [switch] $QuickTimeout,
@@ -39,16 +39,30 @@ function Search-BlackList {
     )
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { $Verbose = $true } else { $Verbose = $false }
 
-    If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
-        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
-    } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
-        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
-    } elseif ($RunType -eq 'WorkflowResolveDNS') {
+    # will remove this after a while
+    if ($RunType -eq 'WorkflowResolveDNS') {
         Write-Warning 'Worflows are not supported anymore due to PowerShell 6 complaining. Please use other modes.'
         Exit
     } elseif ($RunType -eq 'WorkflowWithNetDNS') {
         Write-Warning 'Worflows are not supported anymore due to PowerShell 6 complaining. Please use other modes.'
         Exit
+    }
+
+    if ($PSVersionTable.Platform -eq 'Unix') {
+        if ($RunType -eq 'RunSpaceWithResolveDNS') {
+            $RunType = 'RunSpaceWithNetDNS'
+            Write-Warning 'Search-BlackList - changing RunType to RunSpaceWithNetDNS since Resolve-DNSName is not available on Linux/MacOS'
+        } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
+            $RunType = 'NoWorkflowAndRunSpaceNetDNS'
+            Write-Warning 'Search-BlackList - changing RunType to RunSpaceWithNetDNS since Resolve-DNSName is not available on Linux/MacOS'
+        }
+    }
+
+
+    If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
+        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+    } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
+        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
     } elseif ($RunType -eq 'RunSpaceWithResolveDNS') {
         ### Define Runspace START
         $pool = New-Runspace -MaxRunspaces $maxRunspaces -Verbose:$Verbose
