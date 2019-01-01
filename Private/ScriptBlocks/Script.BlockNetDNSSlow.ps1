@@ -8,8 +8,8 @@ $Script:ScriptBlockNetDNSSlow = {
     if ($Verbose) {
         $verbosepreference = 'continue'
     }
-    $Blacklisted = @()
-    foreach ($Server in $Servers) {
+
+    $Blacklisted = foreach ($Server in $Servers) {
         foreach ($IP in $IPS) {
             $ReversedIP = ($IP -split '\.')[3..0] -join '.'
             $FQDN = "$ReversedIP.$Server"
@@ -19,7 +19,7 @@ $Script:ScriptBlockNetDNSSlow = {
                 $DnsCheck = $null
             }
             if ($null -ne $DnsCheck) {
-                $Blacklisted += [PSCustomObject] @{
+                [PSCustomObject] @{
                     IP        = $ip
                     FQDN      = $fqdn
                     BlackList = $server
@@ -28,7 +28,7 @@ $Script:ScriptBlockNetDNSSlow = {
                     TTL       = ''
                 }
             } else {
-                $Blacklisted += [PSCustomObject] @{
+                [PSCustomObject] @{
                     IP        = $IP
                     FQDN      = $FQDN
                     BlackList = $Server
