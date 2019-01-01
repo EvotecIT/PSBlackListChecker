@@ -9,7 +9,7 @@ jobs:
             displayName: "Run Pester Tests - PowerShell 5"
           - script: |
                 pwsh -c '.\PSBlackListChecker.Tests.ps1' $(TEAMSPESTERID) $(SLACKPESTERID) $(DISCORDURL)
-            displayName: "Run Pester Tests - PowerShell 6"
+            displayName: "Run Pester Tests - PowerShell 6+"
 
     - job: Build_PSCore_Ubuntu1604
       pool:
