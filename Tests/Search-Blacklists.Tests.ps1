@@ -1,7 +1,7 @@
 param (
     $TeamsID = $Env:TEAMSPESTERID,
     $SlackID = $Env:SLACKPESTERID,
-    $DiscordID = $Env:DiscordUrl
+    $DiscordID = $Env:DISCORDURL
 )
 
 Describe 'Search-Blacklists - Should test IP for blacklists' {
