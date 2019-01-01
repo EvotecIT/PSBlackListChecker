@@ -22,6 +22,8 @@ foreach ($Module in $RequiredModules) {
     }
 }
 
+Import-Module $PSScriptRoot\PSBlackListChecker.psd1 -Force #-Verbose
+
 $result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID; DiscordID = $DiscordID } } -EnableExit
 
 if ($result.FailedCount -gt 0) {

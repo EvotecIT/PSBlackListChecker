@@ -4,10 +4,6 @@ param (
     $DiscordID = $Env:DISCORDURL
 )
 
-#Requires -Modules Pester
-Import-Module $PSScriptRoot\..\PSBlackListChecker.psd1 -Force #-Verbose
-
-
 $EmailParameters = @{
     EmailFrom            = "monitoring@domain.pl"
     EmailTo              = "przemyslaw.klys@domain.pl" #

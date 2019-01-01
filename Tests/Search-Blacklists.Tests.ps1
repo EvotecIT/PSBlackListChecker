@@ -3,8 +3,6 @@ param (
     $SlackID = $Env:SLACKPESTERID,
     $DiscordID = $Env:DiscordUrl
 )
-#Requires -Modules Pester
-Import-Module $PSScriptRoot\..\PSBlackListChecker.psd1 -Force #-Verbose
 
 Describe 'Search-Blacklists - Should test IP for blacklists' {
     $IP = '89.74.48.96'

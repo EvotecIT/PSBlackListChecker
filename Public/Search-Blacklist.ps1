@@ -65,12 +65,12 @@ function Search-BlackList {
             }
         }
         ### End Runspaces START
-        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose -ErrorAction Continue -ErrorVariable MyErrors
+        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose -ErrorAction Continue -ErrorVariable MyErrors -ExtendedOutput:$ExtendedOutput
         if ($ExtendedOutput) {
             $Output # returns hashtable of Errors and Output
             Exit
         } else {
-            $Table = $Output.Output
+            $Table = $Output
         }
         ### End Runspaces END
 
@@ -90,12 +90,12 @@ function Search-BlackList {
             }
         }
         ### End Runspaces START
-        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose
+        $Output = Stop-Runspace -Runspaces $runspaces -FunctionName 'Search-BlackList' -RunspacePool $pool -Verbose:$Verbose -ExtendedOutput:$ExtendedOutput
         if ($ExtendedOutput) {
             $Output # returns hashtable of Errors and Output
             Exit
         } else {
-            $Table = $Output.Output
+            $Table = $Output
         }
         ### End Runspaces END
     }
