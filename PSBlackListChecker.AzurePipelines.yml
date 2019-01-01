@@ -5,7 +5,7 @@ jobs:
       steps:
           - powershell: |
                 Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck
-                .\PSBlackListChecker.Tests.ps1 $(TEAMSPESTERID) $(SLACKPESTERID)
+                .\PSBlackListChecker.Tests.ps1 $(TEAMSPESTERID) $(SLACKPESTERID) $(DISCORDURL)
             displayName: "Run Pester Tests"
 
     - job: Build_PSCore_Ubuntu1604
@@ -19,7 +19,7 @@ jobs:
                 sudo apt-get install -y powershell
             displayName: "Install PowerShell Core"
           - script: |
-                pwsh -c '.\PSBlackListChecker.Tests.ps1' $(TEAMSPESTERID) $(SLACKPESTERID)
+                pwsh -c '.\PSBlackListChecker.Tests.ps1' $(TEAMSPESTERID) $(SLACKPESTERID) $(DISCORDURL)
             displayName: "Run Pester Tests"
 
     - job: Build_PSCore_MacOS1013
@@ -33,5 +33,5 @@ jobs:
                 brew cask install powershell
             displayName: "Install PowerShell Core"
           - script: |
-                pwsh -c '.\PSBlackListChecker.Tests.ps1' $(TEAMSPESTERID) $(SLACKPESTERID)
+                pwsh -c '.\PSBlackListChecker.Tests.ps1' $(TEAMSPESTERID) $(SLACKPESTERID) $(DISCORDURL)
             displayName: "Run Pester Tests"
