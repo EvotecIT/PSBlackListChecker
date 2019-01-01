@@ -11,8 +11,8 @@ $Script:ScriptBlockNetDNSSlow = {
 
     $Blacklisted = foreach ($Server in $Servers) {
         foreach ($IP in $IPS) {
-            $ReversedIP = ($IP -split '\.')[3..0] -join '.'
-            $FQDN = "$ReversedIP.$Server"
+            [string] $ReversedIP = ($IP -split '\.')[3..0] -join '.'
+            [string] $FQDN = "$ReversedIP.$Server"
             try {
                 $DnsCheck = [Net.DNS]::GetHostAddresses($FQDN)
             } catch {
