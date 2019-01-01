@@ -34,7 +34,7 @@ function Search-BlackList {
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
         [switch] $SortDescending,
         [switch] $QuickTimeout,
-        [int] $MaxRunspaces = [int]$env:NUMBER_OF_PROCESSORS + 1,
+        [int] $MaxRunspaces = 40,
         [switch] $ExtendedOutput
     )
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { $Verbose = $true } else { $Verbose = $false }
