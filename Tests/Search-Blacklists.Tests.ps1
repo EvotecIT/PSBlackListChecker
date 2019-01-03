@@ -54,7 +54,7 @@ Describe 'Search-Blacklists - Should test multiple IPs for blacklists' {
     $IP = '89.74.48.96','89.74.48.97','89.74.48.98'
 
     It 'Given 3 IP - Standard Way - Should return at least 3 blackslists' {
-        $BlackList = Search-BlackList -IP $IP -DNSServer '1.1.1.1', '8.8.8.8'
+        $BlackList = Search-BlackList -IP $IP
         $BlackList.IP | Should -Contain '89.74.48.96'
         $BlackList.IP | Should -Contain '89.74.48.97'
         $BlackList.IP | Should -Contain '89.74.48.98'
@@ -63,7 +63,7 @@ Describe 'Search-Blacklists - Should test multiple IPs for blacklists' {
         $BlackList.IsListed | Should -Contain $True
     }
     It 'Given 3 IP - Standard way with -ReturnAll switch - should return 234 lists' {
-        $BlackList = Search-BlackList -IP $IP -ReturnAll -DNSServer '1.1.1.1', '8.8.8.8'
+        $BlackList = Search-BlackList -IP $IP -ReturnAll
         $BlackList.Count | Should -Be 231
         $BlackList.IsListed | Should -Contain $True
     }
