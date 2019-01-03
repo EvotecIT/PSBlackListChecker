@@ -1,36 +1,59 @@
 function Search-BlackList {
-    [cmdletbinding()]
     <#
-      .SYNOPSIS
-      Search-Blacklist searches if particular IP is blacklisted on DNSBL Blacklists.
-      .DESCRIPTION
+    .SYNOPSIS
+    Search-Blacklist searches if particular IP is blacklisted on DNSBL Blacklists.
 
-      .PARAMETER IPs
+    .DESCRIPTION
+    Long description
 
-      .PARAMETER BlacklistServers
+    .PARAMETER IPs
+    Parameter description
 
-      .PARAMETER ReturnAll
+    .PARAMETER BlacklistServers
+    Parameter description
 
-      .PARAMETER RunType
+    .PARAMETER ReturnAll
+    Parameter description
 
-      .PARAMETER SortBy
+    .PARAMETER RunType
+    Parameter description
 
-      .PARAMETER SortDescending
+    .PARAMETER SortBy
+    Parameter description
 
-      .EXAMPLE
-      Search-BlackList -IP '89.25.253.1' | Format-Table
-      Search-BlackList -IP '89.25.253.1' -SortBy Blacklist | Format-Table
-      Search-BlackList -IP '89.25.253.1','195.55.55.55' -SortBy Ip -ReturnAll | Format-Table
+    .PARAMETER SortDescending
+    Parameter description
 
-      .NOTES
+    .PARAMETER QuickTimeout
+    Parameter description
 
+    .PARAMETER MaxRunspaces
+    Parameter description
+
+    .PARAMETER ExtendedOutput
+    Parameter description
+
+    .EXAMPLE
+    Search-BlackList -IP '89.25.253.1' | Format-Table
+
+    .EXAMPLE
+    Search-BlackList -IP '89.25.253.1' -SortBy Blacklist | Format-Table
+
+    .EXAMPLE
+    Search-BlackList -IP '89.25.253.1','195.55.55.55' -SortBy Ip -ReturnAll | Format-Table
+
+    .NOTES
+    General notes
     #>
+
+    [cmdletbinding()]
     param
     (
         [alias('IP')][string[]] $IPs,
         [string[]] $BlacklistServers = $Script:BlackLists,
         [switch] $ReturnAll,
-        [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS')][string]$RunType = 'RunSpaceWithResolveDNS',
+        [ValidateSet('NoWorkflowAndRunSpaceNetDNS', 'NoWorkflowAndRunSpaceResolveDNS', 'RunSpaceWithResolveDNS', 'RunSpaceWithNetDNS', 'WorkflowResolveDNS', 'WorkflowWithNetDNS')]
+        [string]$RunType,
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
         [switch] $SortDescending,
         [switch] $QuickTimeout,
@@ -48,6 +71,16 @@ function Search-BlackList {
         Exit
     }
 
+    # no parameter given (and it's expected)
+    if ($RunType -eq '') {
+        if ($PSVersionTable.Platform -eq 'Unix') {
+            $RunType = 'RunSpaceWithNetDNS'
+        } else {
+            $RunType = 'RunSpaceWithResolveDNS'
+        }
+    }
+
+    # checks whether Runspaces are not set for use on Unix (usually forced by user)
     if ($PSVersionTable.Platform -eq 'Unix') {
         if ($RunType -eq 'RunSpaceWithResolveDNS') {
             $RunType = 'RunSpaceWithNetDNS'
@@ -57,7 +90,7 @@ function Search-BlackList {
             Write-Warning 'Search-BlackList - changing RunType to RunSpaceWithNetDNS since Resolve-DNSName is not available on Linux/MacOS'
         }
     }
-
+    Write-Verbose "Search-Blacklist - Runtype: $RunType ReturnAll: $ReturnAll, SortBy: $SortBy MaxRunspaces: $MaxRunspaces SortDescending: $SortDescending"
 
     If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
         $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose

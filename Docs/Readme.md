@@ -11,9 +11,6 @@ Locale: en-US
 {{Manually Enter Description Here}}
 
 ## PSBlackListChecker Cmdlets
-### [Search-BlackList](Search-BlackList.md)
-{{Fill in the Synopsis}}
-
 ### [Start-ReportBlackLists](Start-ReportBlackLists.md)
 {{Fill in the Synopsis}}
 
