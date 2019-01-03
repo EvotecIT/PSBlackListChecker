@@ -3,7 +3,8 @@ $Script:ScriptBlockResolveDNSSlow = {
         [string[]] $Servers,
         [string[]] $IPs,
         [bool] $QuickTimeout,
-        [bool] $Verbose
+        [bool] $Verbose,
+        [string[]] $DNSServer = ''
     )
     if ($Verbose) {
         $verbosepreference = 'continue'
@@ -12,7 +13,11 @@ $Script:ScriptBlockResolveDNSSlow = {
         foreach ($IP in $IPS) {
             $ReversedIP = ($IP -split '\.')[3..0] -join '.'
             $FQDN = "$ReversedIP.$Server"
-            $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
+            if ($DNSServer -ne '') {
+                $DnsCheck = Resolve-DnsName -Name $fqdn -ErrorAction SilentlyContinue -NoHostsFile -QuickTimeout:$QuickTimeout -Server $DNSServer -DnsOnly  # Impact of using -QuickTimeout unknown
+            } else {
+                $DnsCheck = Resolve-DnsName -Name $fqdn -ErrorAction SilentlyContinue -NoHostsFile -QuickTimeout:$QuickTimeout -DnsOnly
+            }
             if ($null -ne $DnsCheck) {
                 [PSCustomObject] @{
                     IP        = $IP

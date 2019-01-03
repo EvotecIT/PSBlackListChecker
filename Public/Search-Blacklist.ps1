@@ -57,7 +57,8 @@ function Search-BlackList {
         [ValidateSet('IP', 'BlackList', 'IsListed', 'Answer', 'FQDN')][string] $SortBy = 'IsListed',
         [switch] $SortDescending,
         [switch] $QuickTimeout,
-        [int] $MaxRunspaces = 40,
+        [int] $MaxRunspaces = 10,
+        [string[]] $DNSServer = '',
         [switch] $ExtendedOutput
     )
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { $Verbose = $true } else { $Verbose = $false }
@@ -90,12 +91,18 @@ function Search-BlackList {
             Write-Warning 'Search-BlackList - changing RunType to RunSpaceWithNetDNS since Resolve-DNSName is not available on Linux/MacOS'
         }
     }
+
+    if ($DNSServer -ne '' -and $RunType -like 'NetDNS') {
+        Write-Warning 'Search-BlackList - Setting DNSServer is not supported for Net.DNS. Resetting to default values.'
+        $DNSServer = ''
+    }
+
     Write-Verbose "Search-Blacklist - Runtype: $RunType ReturnAll: $ReturnAll, SortBy: $SortBy MaxRunspaces: $MaxRunspaces SortDescending: $SortDescending"
 
     If ($RunType -eq 'NoWorkflowAndRunSpaceNetDNS') {
         $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockNetDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
     } elseif ($RunType -eq 'NoWorkflowAndRunSpaceResolveDNS') {
-        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose
+        $Table = Invoke-Command -ScriptBlock $Script:ScriptBlockResolveDNSSlow -ArgumentList $BlacklistServers, $IPs, $QuickTimeout, $Verbose, $DNSServer
     } elseif ($RunType -eq 'RunSpaceWithResolveDNS') {
         ### Define Runspace START
         $pool = New-Runspace -MaxRunspaces $maxRunspaces -Verbose:$Verbose
@@ -107,6 +114,7 @@ function Search-BlackList {
                     IP           = $IP
                     QuickTimeout = $QuickTimeout
                     Verbose      = $Verbose
+                    DNSServer    = $DNSServer
                 }
                 Start-Runspace -ScriptBlock $Script:ScriptBlockResolveDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
             }
@@ -132,6 +140,7 @@ function Search-BlackList {
                     IP           = $IP
                     QuickTimeout = $QuickTimeout
                     Verbose      = $Verbose
+                    #DNSServer    = $DNSServer
                 }
                 Start-Runspace -ScriptBlock $Script:ScriptBlockNetDNS -Parameters $Parameters -RunspacePool $pool -Verbose:$Verbose
             }

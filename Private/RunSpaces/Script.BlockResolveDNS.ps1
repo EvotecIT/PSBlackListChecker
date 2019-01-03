@@ -3,7 +3,8 @@ $Script:ScriptBlockResolveDNS = {
         [string] $Server,
         [string] $IP,
         [bool] $QuickTimeout,
-        [bool] $Verbose
+        [bool] $Verbose,
+        [string[]] $DNSServer = ''
     )
     if ($Verbose) {
         $verbosepreference = 'continue'
@@ -15,7 +16,7 @@ $Script:ScriptBlockResolveDNS = {
     [bool] $Loaded = $false
     Do {
         try {
-            Import-Module -Name 'DnsClient'
+            Import-Module -Name 'DnsClient' -Verbose:$false
             $Loaded = $true
         } catch {
             Write-Warning "DNSClient Import Error ($Server / $FQDN / $IP): $_. Retrying."
@@ -25,7 +26,13 @@ $Script:ScriptBlockResolveDNS = {
             Write-Warning "DNSClient Import failed. Skipping check on $Server / $FQDN / $IP"
         }
     } until ($Loaded -eq $false -or $Count -eq 5)
-    $DnsCheck = Resolve-DnsName -Name $fqdn -DnsOnly -ErrorAction 'SilentlyContinue' -NoHostsFile -QuickTimeout:$QuickTimeout # Impact of using -QuickTimeout unknown
+
+    if ($DNSServer -ne '') {
+        $DnsCheck = Resolve-DnsName -Name $fqdn -ErrorAction SilentlyContinue -NoHostsFile -QuickTimeout:$QuickTimeout -Server $DNSServer -DnsOnly  # Impact of using -QuickTimeout unknown
+    } else {
+        $DnsCheck = Resolve-DnsName -Name $fqdn -ErrorAction SilentlyContinue -NoHostsFile -QuickTimeout:$QuickTimeout -DnsOnly
+    }
+
 
     if ($null -ne $DnsCheck) {
         $ServerData = [PSCustomObject] @{
