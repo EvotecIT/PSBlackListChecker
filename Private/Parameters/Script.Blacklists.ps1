@@ -20,7 +20,7 @@
     # 'dnsbl.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
     'dnsbl.cyberlogic.net'
     'dnsbl.inps.de'
-    'dnsbl.njabl.org'
+    #'dnsbl.njabl.org' # supposedly doesn't work properly anymore
     'dnsbl.sorbs.net'
     'drone.abuse.ch'
     'drone.abuse.ch'
