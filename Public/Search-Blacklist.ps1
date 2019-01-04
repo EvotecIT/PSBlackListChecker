@@ -74,14 +74,12 @@ function Search-BlackList {
 
     # no parameter given (and it's expected)
     if ($RunType -eq '') {
-        $RunType = 'RunSpaceWithNetDNS'
-        <#
+        #$RunType = 'RunSpaceWithNetDNS'
         if ($PSVersionTable.Platform -eq 'Unix') {
             $RunType = 'RunSpaceWithNetDNS'
         } else {
             $RunType = 'RunSpaceWithResolveDNS'
         }
-        #>
     }
 
     # checks whether Runspaces are not set for use on Unix (usually forced by user)

@@ -27,22 +27,6 @@ function Start-ReportBlackLists {
     foreach ($ip in $ReportOptions.MonitoredIps.Values) {
         $Ips += $ip
     }
-    $Time = Measure-Command -Expression {
-        if ($null -eq $ReportOptions.SortBy) {
-            $ReportOptions.SortBy = 'IsListed'
-        }
-        if ($null -eq $ReportOptions.SortDescending) {
-            $ReportOptions.SortDescending = $true
-        }
-
-        if ($ReportOptions.NotificationsEmail.EmailAllResults) {
-            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -ReturnAll
-        } else {
-            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending
-        }
-    }
-    $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
-    $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage 'Following blacklisted servers'
 
     if ($null -eq $ReportOptions.NotificationsEmail) {
         # Not upgraded config / Legacy config
@@ -54,6 +38,25 @@ function Start-ReportBlackLists {
             EmailAlways                  = $ReportOptions.EmailAlways
         }
     }
+
+    $Time = Measure-Command -Expression {
+        if ($null -eq $ReportOptions.SortBy) {
+            $ReportOptions.SortBy = 'IsListed'
+        }
+        if ($null -eq $ReportOptions.SortDescending) {
+            $ReportOptions.SortDescending = $true
+        }
+
+        if ($ReportOptions.NotificationsEmail.EmailAllResults) {
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -ReturnAll -Verbose
+        } else {
+            $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -Verbose
+        }
+    }
+    $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
+    $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage 'Following blacklisted servers'
+
+
 
     if ($BlackListCheck.IsListed -contains $true) {
         $EmailParameters.EmailPriority = $ReportOptions.NotificationsEmail.EmailPriorityWhenBlacklisted
