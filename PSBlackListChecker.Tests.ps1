@@ -15,7 +15,11 @@ if ($null -eq $Pester -or ($Pester[0].Version.Major -le 4 -and $Pester[0].Versio
 
 $RequiredModules = (Get-Content -Raw $PSScriptRoot\*.psd1)  | Invoke-Expression | ForEach-Object RequiredModules
 foreach ($Module in $RequiredModules) {
-    $ModuleFound = Get-Module -ListAvailable $Module
+    if ($Module -is [string]) {
+        $ModuleFound = Get-Module -ListAvailable $Module
+    } else {
+        $ModuleFound = Get-Module -ListAvailable $Module.ModuleName
+    }
     if ($null -eq $ModuleFound) {
         Write-Warning "$ModuleName - Downloading $Module from PSGallery"
         Install-Module -Name $Module -Repository PSGallery -Force -Scope CurrentUser
