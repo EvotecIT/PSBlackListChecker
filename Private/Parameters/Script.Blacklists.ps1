@@ -68,8 +68,8 @@
     'spamrbl.imp.ch'
     't3direct.dnsbl.net.au'
     #'tor.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
-    'tor.dnsbl.sectoor.de'
-    'torserver.tor.dnsbl.sectoor.de'
+    #'tor.dnsbl.sectoor.de' parked domain
+    #'torserver.tor.dnsbl.sectoor.de' as above
     'ubl.lashback.com'
     'ubl.unsubscore.com'
     'virbl.bit.nl'
