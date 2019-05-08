@@ -5,7 +5,8 @@ param (
 )
 $PSVersionTable.PSVersion
 
-$ModuleName = (Get-ChildItem -Path $PSScriptRoot\*.psd1).BaseName
+$ModuleName = (Get-ChildItem -Path $PSScriptRoot\*.psd1).BaseNam
+$ModulePath = (Get-ChildItem -Path $PSScriptRoot\*.psd1).FullName
 
 $Pester = (Get-Module -ListAvailable pester)
 if ($null -eq $Pester -or ($Pester[0].Version.Major -le 4 -and $Pester[0].Version.Minor -lt 4)) {
@@ -13,7 +14,7 @@ if ($null -eq $Pester -or ($Pester[0].Version.Major -le 4 -and $Pester[0].Versio
     Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -Scope CurrentUser
 }
 
-try {
+
     $RequiredModules = (Get-Content -Raw $PSScriptRoot\*.psd1)  | Invoke-Expression | ForEach-Object RequiredModules
     foreach ($Module in $RequiredModules) {
         if ($Module -is [hashtable]) {
@@ -27,12 +28,7 @@ try {
             Install-Module -Name $ModuleRequiredName -Repository PSGallery -Force -Scope CurrentUser
         }
     }
-    Import-Module -Name $ModuleName -Force -ErrorAction Stop
-} catch {
-    $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
-    Write-Error $ErrorMessage
-    return
-}
+Import-Module -Name $ModulePath -Force -ErrorAction Stop
 
 $result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID; DiscordID = $DiscordID } } -EnableExit
 
