@@ -17,23 +17,22 @@ try {
     $RequiredModules = (Get-Content -Raw $PSScriptRoot\*.psd1)  | Invoke-Expression | ForEach-Object RequiredModules
     foreach ($Module in $RequiredModules) {
         if ($Module -is [hashtable]) {
-            $ModuleFound = Get-Module -ListAvailable $Module.ModuleName
+            $ModuleRequiredName = $Module.ModuleName
         } elseif ($Module) {
-            $ModuleFound = Get-Module -ListAvailable $Module
+            $ModuleRequiredName = $Module
         }
+        $ModuleFound = Get-Module -ListAvailable $ModuleRequiredName
         if ($null -eq $ModuleFound) {
-            Write-Warning "$ModuleName - Downloading $Module from PSGallery"
-            Install-Module -Name $Module -Repository PSGallery -Force -Scope CurrentUser
+            Write-Warning "$ModuleName - Downloading $ModuleRequiredName from PSGallery"
+            Install-Module -Name $ModuleRequiredName -Repository PSGallery -Force -Scope CurrentUser
         }
     }
-
     Import-Module -Name $ModuleName -Force -ErrorAction Stop
 } catch {
     $ErrorMessage = $_.Exception.Message -replace "`n", " " -replace "`r", " "
     Write-Error $ErrorMessage
     return
 }
-
 
 $result = Invoke-Pester -Script @{ Path = "$($PSScriptRoot)\Tests"; Parameters = @{ TeamsID = $TeamsID; SlackID = $SlackID; DiscordID = $DiscordID } } -EnableExit
 
