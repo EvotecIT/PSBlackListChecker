@@ -16,6 +16,7 @@ Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklist
 
 
 ## Updates
+- 0.8.2 - 2019.05.08 - Removed few blacklists that seem dead (tnx Narfmeister)
 - 0.7 - 2018.11.03 - [Full blog ppost](https://evotec.xyz/psblacklistchecker-added-discord-support/)
     - Added Discord support
 - 0.6 - 2018.11.02 - [Full blog post](https://evotec.xyz/psblacklistchecker-notifications-to-microsoft-teams-slack-of-blacklisted-ips/)
