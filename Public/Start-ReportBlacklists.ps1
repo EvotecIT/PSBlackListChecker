@@ -11,10 +11,6 @@ function Start-ReportBlackLists {
         Slack   = $false
         Discord = $false
     }
-    $EmailBody = Set-EmailHead -FormattingOptions $FormattingParameters
-    $EmailBody += Set-EmailReportBranding -FormattingOptions $FormattingParameters
-
-
     $TeamID = Format-FirstXChars -Text $ReportOptions.NotificationsTeams.TeamsID -NumberChars 25
     $SlackID = Format-FirstXChars -Text $ReportOptions.NotificationsSlack.Uri -NumberChars 25
     $DiscordID = Format-FirstXChars -Text $ReportOptions.NotificationsDiscord.Uri -NumberChars 25
@@ -23,9 +19,8 @@ function Start-ReportBlackLists {
     Write-Verbose "Start-ReportBlackLists - SlackID: $SlackID"
     Write-Verbose "Start-ReportBlackLists - DiscordID: $DiscordID"
 
-    $Ips = @()
-    foreach ($ip in $ReportOptions.MonitoredIps.Values) {
-        $Ips += $ip
+    $Ips = foreach ($ip in $ReportOptions.MonitoredIps.Values) {
+        $ip
     }
 
     if ($null -eq $ReportOptions.NotificationsEmail) {
@@ -53,10 +48,12 @@ function Start-ReportBlackLists {
             $BlackListCheck = Search-BlackList -IP $Ips -SortBy $ReportOptions.SortBy -SortDescending:$ReportOptions.SortDescending -Verbose
         }
     }
-    $EmailBody += Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
-    $EmailBody += Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage 'Following blacklisted servers'
-
-
+    $EmailBody = @(
+        Set-EmailHead -FormattingOptions $FormattingParameters
+        Set-EmailReportBranding -FormattingOptions $FormattingParameters
+        Set-EmailReportDetails -FormattingOptions $FormattingParameters -ReportOptions $ReportOptions -TimeToGenerate $Time
+        Set-EmailBody -TableData $BlackListCheck -TableWelcomeMessage 'Following blacklisted servers'
+    )
 
     if ($BlackListCheck.IsListed -contains $true) {
         $EmailParameters.EmailPriority = $ReportOptions.NotificationsEmail.EmailPriorityWhenBlacklisted
@@ -83,27 +80,28 @@ function Start-ReportBlackLists {
             [string] $ActivityImageLink = $ReportOptions.NotificationsTeams.MessageImageLink
 
             [RGBColors] $Color = [RGBColors]::Red
-            $Sections = @()
-            foreach ($Server in $BlackListLimited) {
-                [string] $ActivityTitle = "Blacklisted IP **$($Server.IP)**"
-                if ($ReportOptions.NotificationsTeams.MessageButtons) {
-                    $Button1 = New-TeamsButton -Name "Check BlackList" -Link "https://mxtoolbox.com/SuperTool.aspx?action=blacklist%3a$($Server.Ip)&run=toolpage"
-                    $Button2 = New-TeamsButton -Name "Check SMTP" -Link "https://mxtoolbox.com/SuperTool.aspx?action=smtp%3a$($Server.Ip)&run=toolpage"
+            $Sections = @(
+                foreach ($Server in $BlackListLimited) {
+                    [string] $ActivityTitle = "Blacklisted IP **$($Server.IP)**"
+                    if ($ReportOptions.NotificationsTeams.MessageButtons) {
+                        $Button1 = New-TeamsButton -Name "Check BlackList" -Link "https://mxtoolbox.com/SuperTool.aspx?action=blacklist%3a$($Server.Ip)&run=toolpage"
+                        $Button2 = New-TeamsButton -Name "Check SMTP" -Link "https://mxtoolbox.com/SuperTool.aspx?action=smtp%3a$($Server.Ip)&run=toolpage"
 
-                    $Sections += New-TeamsSection `
-                        -ActivityTitle $ActivityTitle `
-                        -ActivitySubtitle "Found on blacklist **$($Server.Blacklist)**" `
-                        -ActivityImageLink $ActivityImageLink `
-                        -ActivityText "Everybody panic!" `
-                        -Buttons $Button1, $Button2
-                } else {
-                    $Sections += New-TeamsSection `
-                        -ActivityTitle $ActivityTitle `
-                        -ActivitySubtitle "Found on blacklist **$($Server.Blacklist)**" `
-                        -ActivityImageLink $ActivityImageLink `
-                        -ActivityText "Responses: $($Server.Answer)"
+                        New-TeamsSection `
+                            -ActivityTitle $ActivityTitle `
+                            -ActivitySubtitle "Found on blacklist **$($Server.Blacklist)**" `
+                            -ActivityImageLink $ActivityImageLink `
+                            -ActivityText "Everybody panic!" `
+                            -Buttons $Button1, $Button2
+                    } else {
+                        New-TeamsSection `
+                            -ActivityTitle $ActivityTitle `
+                            -ActivitySubtitle "Found on blacklist **$($Server.Blacklist)**" `
+                            -ActivityImageLink $ActivityImageLink `
+                            -ActivityText "Responses: $($Server.Answer)"
+                    }
                 }
-            }
+            )
 
             try {
                 $TeamsOutput = Send-TeamsMessage `
@@ -124,15 +122,16 @@ function Start-ReportBlackLists {
             $MessageTitle = $ReportOptions.NotificationsSlack.MessageTitle
             [string] $ActivityImageLink = $ReportOptions.NotificationsSlack.MessageImageLink
 
-            $Attachments = @()
-            foreach ($Server in $BlackListLimited) {
-                $Attachments += New-SlackMessageAttachment -Color $_PSSlackColorMap.red `
-                    -Title "IP $($Server.IP) is Blacklisted" `
-                    -TitleLink "https://mxtoolbox.com/SuperTool.aspx?action=blacklist%3a$($Server.Ip)&run=toolpage" `
-                    -Text $ReportOptions.NotificationsSlack.MessageText `
-                    -Pretext "Found on blacklist $($Server.Blacklist)" `
-                    -Fallback 'Your client is bad'
-            }
+            $Attachments = @(
+                foreach ($Server in $BlackListLimited) {
+                    New-SlackMessageAttachment -Color $_PSSlackColorMap.red `
+                        -Title "IP $($Server.IP) is Blacklisted" `
+                        -TitleLink "https://mxtoolbox.com/SuperTool.aspx?action=blacklist%3a$($Server.Ip)&run=toolpage" `
+                        -Text $ReportOptions.NotificationsSlack.MessageText `
+                        -Pretext "Found on blacklist $($Server.Blacklist)" `
+                        -Fallback 'Your client is bad'
+                }
+            )
 
             try {
                 $SlackOutput = New-SlackMessage -Attachments $Attachments `
