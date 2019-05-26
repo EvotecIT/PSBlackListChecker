@@ -1,9 +1,9 @@
 function Start-ReportBlackLists {
     [cmdletbinding()]
     param(
-        $EmailParameters,
-        $FormattingParameters,
-        $ReportOptions,
+        [System.Collections.IDictionary] $EmailParameters,
+        [System.Collections.IDictionary] $FormattingParameters,
+        [System.Collections.IDictionary] $ReportOptions,
         [switch] $OutputErrors
     )
     $Errors = @{
@@ -61,13 +61,14 @@ function Start-ReportBlackLists {
         $EmailParameters.EmailPriority = $ReportOptions.NotificationsEmail.EmailPriorityStandard
     }
 
+    [string] $Email = $EmailBody | Out-String
 
     if ($ReportOptions.NotificationsEmail.Use) {
-        if ($ReportOptions.EmailAlways -eq $true -or $BlackListCheck.IsListed -contains $true) {
+        if ($ReportOptions.NotificationsEmail.EmailAlways -eq $true -or $BlackListCheck.IsListed -contains $true) {
             if ($FormattingParameters.CompanyBranding.Inline) {
-                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody -InlineAttachments @{logo = $FormattingParameters.CompanyBranding.Logo} -Verbose
+                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $Email -InlineAttachments @{logo = $FormattingParameters.CompanyBranding.Logo} -Verbose
             } else {
-                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $EmailBody
+                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $Email
             }
         }
     }
