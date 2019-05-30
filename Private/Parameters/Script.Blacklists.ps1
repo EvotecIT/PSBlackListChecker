@@ -4,13 +4,13 @@
     'zen.spamhaus.org'
     'bl.deadbeef.com'
     'bl.emailbasura.org'
-    'bl.spamcannibal.org'
+    #'bl.spamcannibal.org' now a parked domain
     'bl.spamcop.net'
     'blackholes.five-ten-sg.com'
     'blacklist.woody.ch'
     'bogons.cymru.com'
     'cbl.abuseat.org'
-    'cdl.anti-spam.org.cn'
+    # 'cdl.anti-spam.org.cn' Inactive
     'combined.abuse.ch'
     'combined.rbl.msrbl.net'
     'db.wpbl.info'
