@@ -10,7 +10,7 @@
     'blacklist.woody.ch'
     'bogons.cymru.com'
     'cbl.abuseat.org'
-    'cdl.anti-spam.org.cn'
+    # 'cdl.anti-spam.org.cn' Inactive
     'combined.abuse.ch'
     'combined.rbl.msrbl.net'
     'db.wpbl.info'
