@@ -4,7 +4,7 @@
     'zen.spamhaus.org'
     'bl.deadbeef.com'
     'bl.emailbasura.org'
-    'bl.spamcannibal.org'
+    #'bl.spamcannibal.org' now a parked domain
     'bl.spamcop.net'
     'blackholes.five-ten-sg.com'
     'blacklist.woody.ch'
