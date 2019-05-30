@@ -4,23 +4,19 @@
     'zen.spamhaus.org'
     'bl.deadbeef.com'
     'bl.emailbasura.org'
-    #'bl.spamcannibal.org' now a parked domain
     'bl.spamcop.net'
     'blackholes.five-ten-sg.com'
     'blacklist.woody.ch'
     'bogons.cymru.com'
     'cbl.abuseat.org'
-    # 'cdl.anti-spam.org.cn' Inactive
     'combined.abuse.ch'
     'combined.rbl.msrbl.net'
     'db.wpbl.info'
     'dnsbl-1.uceprotect.net'
     'dnsbl-2.uceprotect.net'
     'dnsbl-3.uceprotect.net'
-    # 'dnsbl.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
     'dnsbl.cyberlogic.net'
     'dnsbl.inps.de'
-    #'dnsbl.njabl.org' # supposedly doesn't work properly anymore
     'dnsbl.sorbs.net'
     'drone.abuse.ch'
     'drone.abuse.ch'
@@ -67,9 +63,6 @@
     'spamlist.or.kr'
     'spamrbl.imp.ch'
     't3direct.dnsbl.net.au'
-    #'tor.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
-    #'tor.dnsbl.sectoor.de' parked domain
-    #'torserver.tor.dnsbl.sectoor.de' as above
     'ubl.lashback.com'
     'ubl.unsubscore.com'
     'virbl.bit.nl'
@@ -79,4 +72,11 @@
     'wormrbl.imp.ch'
     'xbl.spamhaus.org'
     'zombie.dnsbl.sorbs.net'
+    #'bl.spamcannibal.org' now a parked domain
+    #'tor.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
+    #'tor.dnsbl.sectoor.de' parked domain
+    #'torserver.tor.dnsbl.sectoor.de' as above
+    #'dnsbl.njabl.org' # supposedly doesn't work properly anymore
+    # 'dnsbl.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
+    # 'cdl.anti-spam.org.cn' Inactive
 )

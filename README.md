@@ -16,6 +16,8 @@ Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklist
 
 
 ## Updates
+- 0.8.4 - 2019.05.30
+    - Removed some blacklists (tnx Narfmeister)
 - 0.8.3 - 2019.05.26
     - Fix for email options (tnx lucwuyts)
 - 0.8.2 - 2019.05.08
