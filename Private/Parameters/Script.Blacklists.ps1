@@ -3,7 +3,7 @@
     'spam.rbl.msrbl.net'
     'zen.spamhaus.org'
     'bl.deadbeef.com'
-    'bl.emailbasura.org'
+    #'bl.emailbasura.org' dead as per https://github.com/EvotecIT/PSBlackListChecker/issues/8
     'bl.spamcop.net'
     'blackholes.five-ten-sg.com'
     'blacklist.woody.ch'
