@@ -24,7 +24,7 @@
     'dul.dnsbl.sorbs.net'
     'dul.ru'
     'dyna.spamrats.com'
-    'dynip.rothen.com'
+    # 'dynip.rothen.com' dead as per https://github.com/EvotecIT/PSBlackListChecker/issues/9
     'http.dnsbl.sorbs.net'
     'images.rbl.msrbl.net'
     'ips.backscatterer.org'
