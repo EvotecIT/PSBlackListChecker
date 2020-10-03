@@ -22,7 +22,7 @@
 
 Basic functionality of this module is ability to quickly verify if given IP address is on any of over 80 defined DNSBL lists. Below code will return results only if IP is on any of the lists. Advanced functionality of this module is ability to send reports to your email when things get bad on one of those 80 defined DNSBL listrs.
 
-Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklistchecker/
+Full Description for this project at: <https://evotec.xyz/hub/scripts/psblacklistchecker/>
 
 ## Functionality
 
@@ -34,6 +34,8 @@ Full Description for this project at: https://evotec.xyz/hub/scripts/psblacklist
 
 ## Changelog
 
+- 0.8.6 - 2020.10.3
+  - Removed blacklist (tnx williamb1024)
 - 0.8.5 - 2019.11.1
   - Removed blacklist (tnx SNicolini)
 - 0.8.4 - 2019.05.30
