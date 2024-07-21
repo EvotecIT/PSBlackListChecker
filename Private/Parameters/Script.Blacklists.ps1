@@ -17,7 +17,7 @@
     'dnsbl-3.uceprotect.net'
     'dnsbl.cyberlogic.net'
     'dnsbl.inps.de'
-    'dnsbl.sorbs.net'
+    #'dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'drone.abuse.ch'
     'drone.abuse.ch'
     'duinv.aupads.org'
@@ -25,12 +25,12 @@
     'dul.ru'
     'dyna.spamrats.com'
     # 'dynip.rothen.com' dead as per https://github.com/EvotecIT/PSBlackListChecker/issues/9
-    'http.dnsbl.sorbs.net'
+    #'http.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'images.rbl.msrbl.net'
     'ips.backscatterer.org'
     'ix.dnsbl.manitu.net'
     'korea.services.net'
-    'misc.dnsbl.sorbs.net'
+    #'misc.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'noptr.spamrats.com'
     'ohps.dnsbl.net.au'
     'omrs.dnsbl.net.au'
@@ -55,10 +55,10 @@
     'rmst.dnsbl.net.au'
     'sbl.spamhaus.org'
     'short.rbl.jp'
-    'smtp.dnsbl.sorbs.net'
-    'socks.dnsbl.sorbs.net'
+    #'smtp.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
+    #'socks.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'spam.abuse.ch'
-    'spam.dnsbl.sorbs.net'
+    #'spam.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'spam.spamrats.com'
     'spamlist.or.kr'
     'spamrbl.imp.ch'
@@ -68,10 +68,10 @@
     'virbl.bit.nl'
     'virus.rbl.jp'
     'virus.rbl.msrbl.net'
-    'web.dnsbl.sorbs.net'
+    #'web.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     'wormrbl.imp.ch'
     'xbl.spamhaus.org'
-    'zombie.dnsbl.sorbs.net'
+    #'zombie.dnsbl.sorbs.net' # https://github.com/EvotecIT/PSBlackListChecker/issues/11
     #'bl.spamcannibal.org' now a parked domain
     #'tor.ahbl.org' # as per https://ahbl.org/ was terminated in 2015
     #'tor.dnsbl.sectoor.de' parked domain
