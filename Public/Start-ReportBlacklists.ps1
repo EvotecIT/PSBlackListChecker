@@ -66,7 +66,7 @@ function Start-ReportBlackLists {
     if ($ReportOptions.NotificationsEmail.Use) {
         if ($ReportOptions.NotificationsEmail.EmailAlways -eq $true -or $BlackListCheck.IsListed -contains $true) {
             if ($FormattingParameters.CompanyBranding.Inline) {
-                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $Email -InlineAttachments @{logo = $FormattingParameters.CompanyBranding.Logo} -Verbose
+                $SendMail = Send-Email -EmailParameters $EmailParameters -Body $Email -InlineAttachments @{logo = $FormattingParameters.CompanyBranding.Logo } -Verbose
             } else {
                 $SendMail = Send-Email -EmailParameters $EmailParameters -Body $Email
             }
@@ -106,7 +106,7 @@ function Start-ReportBlackLists {
 
             try {
                 $TeamsOutput = Send-TeamsMessage `
-                    -URI $ReportOptions.NotificationsTeams.TeamsID `
+                    -Uri $ReportOptions.NotificationsTeams.TeamsID `
                     -MessageTitle $MessageTitle `
                     -Color $Color `
                     -Sections $Sections `
@@ -119,6 +119,13 @@ function Start-ReportBlackLists {
             #Write-Color @script:WriteParameters -Text "[i] Teams output: ", $Data -Color White, Yellow
         }
         if ($ReportOptions.NotificationsSlack.Use) {
+
+            if (Get-Module -ListAvailable -Name PSSlack -ErrorAction SilentlyContinue) {
+                Import-Module -Name PSSlack -Force -ErrorAction SilentlyContinue
+            } else {
+                Write-Warning "PSSlack module not found. Please install it using Install-Module -Name PSSlack"
+                return
+            }
 
             $MessageTitle = $ReportOptions.NotificationsSlack.MessageTitle
             [string] $ActivityImageLink = $ReportOptions.NotificationsSlack.MessageImageLink
@@ -163,7 +170,7 @@ function Start-ReportBlackLists {
                 }
 
                 $Thumbnail = New-DiscordThumbnail -Url $ReportOptions.NotificationsDiscord.MessageImageLink
-                $Author = New-DiscordAuthor -Name 'PSBlacklistChecker' -IconUrl  $ReportOptions.NotificationsDiscord.MessageImageLink
+                $Author = New-DiscordAuthor -Name 'PSBlacklistChecker' -IconUrl $ReportOptions.NotificationsDiscord.MessageImageLink
                 $Section = New-DiscordSection -Title $ReportOptions.NotificationsDiscord.MessageText `
                     -Description '' `
                     -Facts $Facts `
