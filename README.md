@@ -34,6 +34,8 @@ Full Description for this project at: <https://evotec.xyz/hub/scripts/psblacklis
 
 ## Changelog
 
+- 0.8.7 - 2024.07.21
+- - Remove `SORBS.NET` from Blacklists as per [#11](https://github.com/EvotecIT/PSBlackListChecker/issues/11)
 - 0.8.6 - 2020.10.3
   - Removed blacklist (tnx williamb1024)
 - 0.8.5 - 2019.11.1
