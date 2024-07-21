@@ -1,6 +1,7 @@
 Ignore/*
 .vs/*
-.vscode/*
 Releases/*
-*.json
+ReleasesUnpacked/*
+.vscode/*
 *.html
+Artefacts/*
