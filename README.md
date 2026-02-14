@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.powershellgallery.com/packages/PSBlackListChecker"><img src="https://img.shields.io/powershellgallery/v/PSBlackListChecker.svg"></a>
-  <a href="https://www.powershellgallery.com/packages/PSBlackListChecker"><img src="https://img.shields.io/powershellgallery/vpre/PSBlackListChecker.svg?label=powershell%20gallery%20preview&colorB=yellow"></a>
+  <a href="https://www.powershellgallery.com/packages/PSBlackListChecker"><img src="https://img.shields.io/powershellgallery/v/PSBlackListChecker.svg?label=powershell%20gallery%20preview&colorB=yellow&include_prereleases"></a>
   <a href="https://github.com/EvotecIT/PSBlackListChecker"><img src="https://img.shields.io/github/license/EvotecIT/PSBlackListChecker.svg"></a>
   <a href="https://dev.azure.com/evotecpl/PSBlackListChecker/_build/latest?definitionId=3"><img src="https://dev.azure.com/evotecpl/PSBlackListChecker/_apis/build/status/EvotecIT.PSBlackListChecker"></a>
 </p>
